@@ -62,7 +62,12 @@
                                     {
                                         <li>
                                             <a class="dropdown-item fw-bold text-warning" asp-controller="Home" asp-action="VerSolicitudes">
-                                                <i class="fa-solid fa-sliders me-2"></i>Panel Admin (Z-SEC)
+                                                <i class="fa-solid fa-envelope-open-text me-2"></i>Leads / Solicitudes
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item fw-bold text-success" asp-controller="Home" asp-action="GestionProductos">
+                                                <i class="fa-solid fa-boxes-stacked me-2"></i>Gestión de Inventario
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider border-secondary"></li>
@@ -158,12 +163,10 @@
                 .then(html => {
                     document.getElementById('contenedor-carrito-offcanvas').innerHTML = html;
 
-                    // Suma matemática corregida a prueba de fallos
                     let filas = document.querySelectorAll('#contenedor-carrito-offcanvas .list-group-item');
                     let totalItems = 0;
                     filas.forEach(f => {
                         let badgeText = f.querySelector('.badge')?.textContent || '1';
-                        // Esta línea extrae SOLO los números (ignora la "x" y los espacios)
                         let cant = parseInt(badgeText.replace(/[^0-9]/g, '')) || 1;
                         totalItems += cant;
                     });

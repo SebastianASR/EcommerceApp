@@ -24,9 +24,14 @@
                         <div class="form-text text-muted mt-1"><i class="fa-solid fa-circle-info me-1"></i>Sube la foto a <a href="https://postimages.org/" target="_blank" class="text-warning">Postimages</a> y pega aquí el "Direct Link" (debe terminar en .png o .jpg)</div>
                     </div>
                     <div class="col-md-4">
-                        <label asp-for="CategoriaId" class="form-label small fw-bold text-secondary">ID CATEGORÍA</label>
-                        <input asp-for="CategoriaId" type="number" class="form-control bg-transparent text-white border-secondary" required />
-                        <div class="form-text text-muted small">1: CPU | 2: GPU | 3: RAM | 4: Placas/Fuentes</div>
+                        <label asp-for="CategoriaId" class="form-label small fw-bold text-secondary">CATEGORÍA DEL COMPONENTE</label>
+                        <select asp-for="CategoriaId" class="form-select bg-transparent text-white border-secondary" required>
+                            <option value="" class="text-dark" selected disabled>Selecciona una familia...</option>
+                            <option value="1" class="text-dark">1 - Procesadores (CPU)</option>
+                            <option value="2" class="text-dark">2 - Tarjetas Gráficas (GPU)</option>
+                            <option value="3" class="text-dark">3 - Memorias RAM</option>
+                            <option value="4" class="text-dark">4 - Almacenamiento, Placas y Fuentes</option>
+                        </select>
                     </div>
                     <div class="col-md-8">
                         <label asp-for="Descripcion" class="form-label small fw-bold text-secondary">DESCRIPCIÓN COMERCIAL</label>

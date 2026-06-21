@@ -50,6 +50,36 @@ namespace EcommerceApp.Controllers
             return View(query.ToList());
         }
 
+        // --- MOTOR DE SESIÓN DEL CARRITO ---
+        private List<int> ObtenerIdsCarrito()
+        {
+            string? carritoBolsa = HttpContext.Session.GetString("MiBolsa");
+
+            if (string.IsNullOrEmpty(carritoBolsa))
+                return new List<int>();
+
+            try
+            {
+                return JsonSerializer.Deserialize<List<int>>(carritoBolsa) ?? new List<int>();
+            }
+            catch
+            {
+                return new List<int>();
+            }
+        }
+
+        private void GuardarIdsCarrito(List<int> listaIds)
+        {
+            if (listaIds.Any())
+            {
+                HttpContext.Session.SetString("MiBolsa", JsonSerializer.Serialize(listaIds));
+            }
+            else
+            {
+                HttpContext.Session.Remove("MiBolsa");
+            }
+        }
+
         // --- EL MOTOR AGRUPADOR DE LINQ ---
         private List<CarritoItem> ObtenerBolsaAgrupada(List<int> listaIds)
         {
@@ -60,7 +90,8 @@ namespace EcommerceApp.Controllers
 
             return listaIds
                 .GroupBy(id => id)
-                .Select(grupo => {
+                .Select(grupo =>
+                {
                     var prod = productosDb.FirstOrDefault(p => p.Id == grupo.Key);
                     return prod != null ? new CarritoItem { Producto = prod, Cantidad = grupo.Count() } : null;
                 })
@@ -71,25 +102,73 @@ namespace EcommerceApp.Controllers
 
         public IActionResult AgregarAlCarrito(int id)
         {
-            string? carritoBolsa = HttpContext.Session.GetString("MiBolsa");
-            List<int> listaIds = string.IsNullOrEmpty(carritoBolsa) ? new List<int>() : JsonSerializer.Deserialize<List<int>>(carritoBolsa)!;
-            listaIds.Add(id);
-            HttpContext.Session.SetString("MiBolsa", JsonSerializer.Serialize(listaIds));
+            List<int> listaIds = ObtenerIdsCarrito();
+
+            var productoExiste = _context.Productos.Any(p => p.Id == id);
+
+            if (productoExiste)
+            {
+                listaIds.Add(id);
+                GuardarIdsCarrito(listaIds);
+            }
+
             return RedirectToAction("Index");
         }
 
         public IActionResult GetCarritoOffcanvas(int? idProducto)
         {
-            string? carritoBolsa = HttpContext.Session.GetString("MiBolsa");
-            List<int> listaIds = string.IsNullOrEmpty(carritoBolsa) ? new List<int>() : JsonSerializer.Deserialize<List<int>>(carritoBolsa)!;
+            List<int> listaIds = ObtenerIdsCarrito();
 
             if (idProducto.HasValue)
             {
-                listaIds.Add(idProducto.Value);
-                HttpContext.Session.SetString("MiBolsa", JsonSerializer.Serialize(listaIds));
+                var productoExiste = _context.Productos.Any(p => p.Id == idProducto.Value);
+
+                if (productoExiste)
+                {
+                    listaIds.Add(idProducto.Value);
+                    GuardarIdsCarrito(listaIds);
+                }
             }
 
             return PartialView("_CarritoLateral", ObtenerBolsaAgrupada(listaIds));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult QuitarUnidadCarrito(int id)
+        {
+            List<int> listaIds = ObtenerIdsCarrito();
+
+            int indiceProducto = listaIds.FindIndex(x => x == id);
+
+            if (indiceProducto >= 0)
+            {
+                listaIds.RemoveAt(indiceProducto);
+                GuardarIdsCarrito(listaIds);
+            }
+
+            return PartialView("_CarritoLateral", ObtenerBolsaAgrupada(listaIds));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EliminarProductoCarrito(int id)
+        {
+            List<int> listaIds = ObtenerIdsCarrito();
+
+            listaIds.RemoveAll(x => x == id);
+            GuardarIdsCarrito(listaIds);
+
+            return PartialView("_CarritoLateral", ObtenerBolsaAgrupada(listaIds));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult VaciarCarrito()
+        {
+            HttpContext.Session.Remove("MiBolsa");
+
+            return PartialView("_CarritoLateral", new List<CarritoItem>());
         }
 
         [HttpGet]
@@ -110,6 +189,7 @@ namespace EcommerceApp.Controllers
                 TempData["MensajeExito"] = "¡Solicitud guardada con éxito! Nuestro equipo se pondrá en contacto al correo indicado.";
                 return RedirectToAction("AsesoriaVip");
             }
+
             return View(modelo);
         }
 
@@ -145,6 +225,7 @@ namespace EcommerceApp.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction("GestionProductos");
             }
+
             return View(modelo);
         }
 
@@ -153,7 +234,10 @@ namespace EcommerceApp.Controllers
         public IActionResult EditarProducto(int id)
         {
             var producto = _context.Productos.Find(id);
-            if (producto == null) return NotFound();
+
+            if (producto == null)
+                return NotFound();
+
             return View(producto);
         }
 
@@ -167,6 +251,7 @@ namespace EcommerceApp.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction("GestionProductos");
             }
+
             return View(modelo);
         }
 
@@ -175,17 +260,28 @@ namespace EcommerceApp.Controllers
         public async Task<IActionResult> EliminarProducto(int id)
         {
             var producto = _context.Productos.Find(id);
+
             if (producto != null)
             {
                 _context.Remove(producto);
                 await _context.SaveChangesAsync();
             }
+
             return RedirectToAction("GestionProductos");
         }
 
-        public IActionResult Privacy() { return View(); }
+        public IActionResult Privacy()
+        {
+            return View();
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error() { return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier }); }
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            });
+        }
     }
 }

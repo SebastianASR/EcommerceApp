@@ -220,7 +220,10 @@
         </div>
 
         <div class="offcanvas-footer p-4 border-top border-secondary border-opacity-25 bg-black bg-opacity-40">
-            <a asp-controller="Checkout" asp-action="Index" class="btn btn-primary btn-lg w-100 fw-bold py-3 rounded-3 shadow-lg text-uppercase tracking-wide">
+            <a id="btnCheckoutOffcanvas"
+               asp-controller="Checkout"
+               asp-action="Index"
+               class="btn btn-primary btn-lg w-100 fw-bold py-3 rounded-3 shadow-lg text-uppercase tracking-wide">
                 Proceder al Checkout <i class="fa-solid fa-cash-register ms-2"></i>
             </a>
         </div>
@@ -257,13 +260,50 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     <script>
+        function actualizarBadgeCarrito() {
+            const totalInput = document.getElementById('cartTotalItems');
+            const totalItems = totalInput ? (parseInt(totalInput.value) || 0) : 0;
+
+            const badge = document.getElementById('badgeCartCount');
+
+            if (badge) {
+                badge.innerText = totalItems;
+                badge.style.display = totalItems > 0 ? 'inline-block' : 'none';
+            }
+
+            const checkoutBtn = document.getElementById('btnCheckoutOffcanvas');
+
+            if (checkoutBtn) {
+                if (totalItems <= 0) {
+                    checkoutBtn.classList.add('disabled');
+                    checkoutBtn.setAttribute('aria-disabled', 'true');
+                    checkoutBtn.setAttribute('tabindex', '-1');
+                } else {
+                    checkoutBtn.classList.remove('disabled');
+                    checkoutBtn.removeAttribute('aria-disabled');
+                    checkoutBtn.removeAttribute('tabindex');
+                }
+            }
+        }
+
+        function obtenerTokenCarrito() {
+            const tokenInput = document.querySelector('#contenedor-carrito-offcanvas input[name="__RequestVerificationToken"]');
+            return tokenInput ? tokenInput.value : '';
+        }
+
         function procesarCarrito(idProducto, abrirFuerza) {
             let url = '/Home/GetCarritoOffcanvas';
+
             if (idProducto) {
                 url += '?idProducto=' + idProducto;
             }
 
-            fetch(url)
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
                 .then(response => {
                     if (!response.ok) throw new Error("Error crítico en la comunicación de red.");
                     return response.text();
@@ -271,17 +311,7 @@
                 .then(html => {
                     document.getElementById('contenedor-carrito-offcanvas').innerHTML = html;
 
-                    let filas = document.querySelectorAll('#contenedor-carrito-offcanvas .list-group-item');
-                    let totalItems = 0;
-                    filas.forEach(f => {
-                        let badgeText = f.querySelector('.badge')?.textContent || '1';
-                        let cant = parseInt(badgeText.replace(/[^0-9]/g, '')) || 1;
-                        totalItems += cant;
-                    });
-
-                    let badge = document.getElementById('badgeCartCount');
-                    badge.innerText = totalItems;
-                    badge.style.display = totalItems > 0 ? 'inline-block' : 'none';
+                    actualizarBadgeCarrito();
 
                     if (abrirFuerza) {
                         let miOffcanvas = document.getElementById('offcanvasCarrito');
@@ -292,11 +322,48 @@
                 .catch(err => console.error("⚡ [Z-CORE ERROR]: Sincronización de estado fallida:", err));
         }
 
+        function actualizarCarrito(url, idProducto) {
+            const token = obtenerTokenCarrito();
+
+            const body = new URLSearchParams();
+
+            if (idProducto !== null && idProducto !== undefined) {
+                body.append('id', idProducto);
+            }
+
+            if (token) {
+                body.append('__RequestVerificationToken', token);
+            }
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'RequestVerificationToken': token,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: body.toString()
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error("No se pudo actualizar el carrito.");
+                    return response.text();
+                })
+                .then(html => {
+                    document.getElementById('contenedor-carrito-offcanvas').innerHTML = html;
+                    actualizarBadgeCarrito();
+
+                    let miOffcanvas = document.getElementById('offcanvasCarrito');
+                    let bsOffcanvas = bootstrap.Offcanvas.getInstance(miOffcanvas) || new bootstrap.Offcanvas(miOffcanvas);
+                    bsOffcanvas.show();
+                })
+                .catch(err => console.error("⚡ [Z-CORE ERROR]: Operación de carrito fallida:", err));
+        }
+
         function abrirCarritoLateral(idProducto) {
             procesarCarrito(idProducto, true);
         }
 
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             procesarCarrito(null, false);
         });
     </script>

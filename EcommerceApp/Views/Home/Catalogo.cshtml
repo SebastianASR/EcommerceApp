@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Catálogo de Hardware";
-    // Capturamos lo que el usuario escribió antes para que no se le borre del input
+    
     string busquedaActual = Context.Request.Query["buscar"].ToString();
     string catActual = Context.Request.Query["categoria"].ToString();
     string ordActual = Context.Request.Query["orden"].ToString();

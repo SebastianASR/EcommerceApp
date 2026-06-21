@@ -11,6 +11,6 @@
         public Producto Producto { get; set; } = null!;
 
         public int Cantidad { get; set; }
-        public int PrecioUnitario { get; set; } // Guardamos el precio del momento por si después sube o baja
+        public int PrecioUnitario { get; set; }
     }
 }

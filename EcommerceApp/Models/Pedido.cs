@@ -8,7 +8,7 @@ namespace EcommerceApp.Models
     {
         public int Id { get; set; }
 
-        // Amarra el pedido al usuario logueado de Identity (opcional por si compra como invitado)
+      
         public string? UsuarioId { get; set; }
 
         [Required(ErrorMessage = "El nombre es obligatorio")]
@@ -33,7 +33,7 @@ namespace EcommerceApp.Models
         [Required(ErrorMessage = "El número es obligatorio")]
         public string Numero { get; set; } = null!;
 
-        public string? DeptoBlockOficina { get; set; } // Opcional
+        public string? DeptoBlockOficina { get; set; } 
 
         public int Total { get; set; }
         public DateTime FechaPedido { get; set; } = DateTime.UtcNow;

@@ -18,7 +18,7 @@ namespace EcommerceApp.Models
         [Required]
         public string Detalles { get; set; } = null!;
 
-        // C# va a guardar la fecha y hora exacta en que el cliente apretó el botón
+  
         public DateTime FechaSolicitud { get; set; } = DateTime.UtcNow;
     }
 }

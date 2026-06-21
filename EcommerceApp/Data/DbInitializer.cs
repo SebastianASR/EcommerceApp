@@ -9,7 +9,7 @@ namespace EcommerceApp.Data
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
-            // 1. Crear los roles esenciales en la base de datos si no existen
+            
             string[] roles = { "Admin", "Cliente" };
             foreach (var role in roles)
             {
@@ -19,7 +19,7 @@ namespace EcommerceApp.Data
                 }
             }
 
-            // 2. Crear el Administrador del e-commerce por defecto
+            
             var adminEmail = "admin@zcommerce.cl";
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
@@ -32,11 +32,11 @@ namespace EcommerceApp.Data
                     EmailConfirmed = true
                 };
 
-                // Le inyectamos una contraseña fuerte inicial
+                
                 var resultado = await userManager.CreateAsync(admin, "ZCommerce2026!");
                 if (resultado.Succeeded)
                 {
-                    // Lo coronamos como Admin oficial
+                    
                     await userManager.AddToRoleAsync(admin, "Admin");
                 }
             }

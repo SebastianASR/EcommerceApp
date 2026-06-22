@@ -2,12 +2,19 @@
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
 
+    bool activoDashboard = currentController == "Pedidos" && currentAction == "Dashboard";
     bool activoCompras = currentController == "Pedidos" && currentAction == "AdminCompras";
     bool activoInventario = currentController == "Home" && currentAction == "GestionProductos";
     bool activoSolicitudes = currentController == "Home" && currentAction == "VerSolicitudes";
 }
 
 <div class="d-flex gap-2 flex-wrap justify-content-start justify-content-md-end mb-4">
+    <a asp-controller="Pedidos"
+       asp-action="Dashboard"
+       class="btn @(activoDashboard ? "btn-success" : "btn-outline-success") fw-bold rounded-3">
+        <i class="fa-solid fa-chart-line me-1"></i> Dashboard
+    </a>
+
     <a asp-controller="Pedidos"
        asp-action="AdminCompras"
        class="btn @(activoCompras ? "btn-info text-dark" : "btn-outline-info") fw-bold rounded-3">

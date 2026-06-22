@@ -79,7 +79,145 @@ namespace EcommerceApp.Controllers
 
             return View(pedidos);
         }
+        [Authorize(Roles = "Admin,DemoAdmin")]
+        [HttpGet]
+        public async Task<IActionResult> Dashboard()
+        {
+            var ahora = DateTime.UtcNow;
+            var inicioHoy = ahora.Date;
+            var inicioMes = new DateTime(ahora.Year, ahora.Month, 1);
 
+            var pedidos = await _context.Pedidos
+                .Include(p => p.Usuario)
+                .Include(p => p.Detalles)
+                .ThenInclude(d => d.Producto)
+                .OrderByDescending(p => p.FechaPedido)
+                .ToListAsync();
+
+            var pedidosAutorizados = pedidos
+                .Where(p => p.EstadoPago == "Autorizado")
+                .ToList();
+
+            var ventasTotales = pedidosAutorizados.Sum(p => p.Total);
+            var cantidadPedidosAutorizados = pedidosAutorizados.Count;
+
+            var ultimos7Dias = Enumerable.Range(0, 7)
+                .Select(i => ahora.Date.AddDays(-6 + i))
+                .ToList();
+
+            var ventasUltimos7Dias = ultimos7Dias
+                .Select(dia =>
+                {
+                    var pedidosDia = pedidosAutorizados
+                        .Where(p => p.FechaPedido.Date == dia.Date)
+                        .ToList();
+
+                    return new VentaPorDiaViewModel
+                    {
+                        Dia = dia.ToString("dd/MM"),
+                        Total = pedidosDia.Sum(p => p.Total),
+                        CantidadPedidos = pedidosDia.Count
+                    };
+                })
+                .ToList();
+
+            var ultimos6Meses = Enumerable.Range(0, 6)
+                .Select(i => new DateTime(ahora.Year, ahora.Month, 1).AddMonths(-5 + i))
+                .ToList();
+
+            var ventasUltimos6Meses = ultimos6Meses
+                .Select(mes =>
+                {
+                    var pedidosMes = pedidosAutorizados
+                        .Where(p => p.FechaPedido.Year == mes.Year && p.FechaPedido.Month == mes.Month)
+                        .ToList();
+
+                    return new VentaPorMesViewModel
+                    {
+                        Mes = mes.ToString("MMM yyyy"),
+                        Total = pedidosMes.Sum(p => p.Total),
+                        CantidadPedidos = pedidosMes.Count
+                    };
+                })
+                .ToList();
+
+            var productosMasVendidos = pedidosAutorizados
+                .SelectMany(p => p.Detalles)
+                .Where(d => d.Producto != null)
+                .GroupBy(d => d.Producto!.Nombre)
+                .Select(g => new ProductoMasVendidoViewModel
+                {
+                    Nombre = g.Key,
+                    CantidadVendida = g.Sum(d => d.Cantidad),
+                    TotalVendido = g.Sum(d => d.Cantidad * d.PrecioUnitario)
+                })
+                .OrderByDescending(p => p.CantidadVendida)
+                .Take(5)
+                .ToList();
+
+            var estadosPedidos = pedidos
+                .GroupBy(p => string.IsNullOrWhiteSpace(p.EstadoPedido) ? "Sin estado" : p.EstadoPedido)
+                .Select(g => new EstadoPedidoViewModel
+                {
+                    Estado = g.Key,
+                    Cantidad = g.Count()
+                })
+                .OrderByDescending(e => e.Cantidad)
+                .ToList();
+
+            var dashboard = new VentasDashboardViewModel
+            {
+                TotalPedidos = pedidos.Count,
+
+                PedidosAutorizados = cantidadPedidosAutorizados,
+
+                PedidosPendientes = pedidos.Count(p =>
+                    p.EstadoPedido == "Pendiente" ||
+                    p.EstadoPedido == "Pagado" ||
+                    p.EstadoPedido == "Preparando" ||
+                    p.EstadoPedido == "Enviado"
+                ),
+
+                PedidosCancelados = pedidos.Count(p => p.EstadoPedido == "Cancelado"),
+
+                ClientesUnicos = pedidos
+                    .Where(p => !string.IsNullOrWhiteSpace(p.Correo))
+                    .Select(p => p.Correo)
+                    .Distinct()
+                    .Count(),
+
+                ProductosVendidos = pedidosAutorizados
+                    .SelectMany(p => p.Detalles)
+                    .Sum(d => d.Cantidad),
+
+                VentasTotales = ventasTotales,
+
+                VentasHoy = pedidosAutorizados
+                    .Where(p => p.FechaPedido.Date == inicioHoy)
+                    .Sum(p => p.Total),
+
+                VentasMesActual = pedidosAutorizados
+                    .Where(p => p.FechaPedido >= inicioMes)
+                    .Sum(p => p.Total),
+
+                TicketPromedio = cantidadPedidosAutorizados > 0
+                    ? ventasTotales / cantidadPedidosAutorizados
+                    : 0,
+
+                VentasUltimos7Dias = ventasUltimos7Dias,
+                VentasUltimos6Meses = ventasUltimos6Meses,
+                ProductosMasVendidos = productosMasVendidos,
+                EstadosPedidos = estadosPedidos,
+
+                UltimosPedidos = pedidos
+                    .Take(6)
+                    .ToList()
+            };
+
+            ViewBag.EsDemoAdmin = User.IsInRole("DemoAdmin") && !User.IsInRole("Admin");
+
+            return View(dashboard);
+        }
         // Detalle de pedido
         // Cliente: solo puede ver sus propios pedidos.
         // Admin/DemoAdmin: pueden ver cualquier pedido.

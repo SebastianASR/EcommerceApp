@@ -1,0 +1,28 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+
+    bool activoCompras = currentController == "Pedidos" && currentAction == "AdminCompras";
+    bool activoInventario = currentController == "Home" && currentAction == "GestionProductos";
+    bool activoSolicitudes = currentController == "Home" && currentAction == "VerSolicitudes";
+}
+
+<div class="d-flex gap-2 flex-wrap justify-content-start justify-content-md-end mb-4">
+    <a asp-controller="Pedidos"
+       asp-action="AdminCompras"
+       class="btn @(activoCompras ? "btn-info text-dark" : "btn-outline-info") fw-bold rounded-3">
+        <i class="fa-solid fa-receipt me-1"></i> Compras
+    </a>
+
+    <a asp-controller="Home"
+       asp-action="GestionProductos"
+       class="btn @(activoInventario ? "btn-dark" : "btn-outline-dark") fw-bold rounded-3">
+        <i class="fa-solid fa-boxes-stacked me-1"></i> Inventario
+    </a>
+
+    <a asp-controller="Home"
+       asp-action="VerSolicitudes"
+       class="btn @(activoSolicitudes ? "btn-primary" : "btn-outline-primary") fw-bold rounded-3">
+        <i class="fa-solid fa-envelope-open-text me-1"></i> Solicitudes
+    </a>
+</div>

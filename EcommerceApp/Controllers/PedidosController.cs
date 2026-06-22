@@ -58,6 +58,7 @@ namespace EcommerceApp.Controllers
             ViewBag.EsDemoAdmin = User.IsInRole("DemoAdmin") && !User.IsInRole("Admin");
 
             ViewBag.TotalPedidos = pedidos.Count;
+
             ViewBag.TotalVendido = pedidos
                 .Where(p => p.EstadoPago == "Autorizado")
                 .Sum(p => p.Total);
@@ -69,14 +70,19 @@ namespace EcommerceApp.Controllers
                 .Count();
 
             ViewBag.PedidosPendientes = pedidos
-                .Count(p => p.EstadoPedido == "Pendiente" || p.EstadoPedido == "Pagado");
+                .Count(p =>
+                    p.EstadoPedido == "Pendiente" ||
+                    p.EstadoPedido == "Pagado" ||
+                    p.EstadoPedido == "Preparando" ||
+                    p.EstadoPedido == "Enviado"
+                );
 
             return View(pedidos);
         }
 
         // Detalle de pedido
-        // Cliente: solo puede ver sus propios pedidos
-        // Admin/DemoAdmin: pueden ver cualquier pedido
+        // Cliente: solo puede ver sus propios pedidos.
+        // Admin/DemoAdmin: pueden ver cualquier pedido.
         [HttpGet]
         public async Task<IActionResult> Detalle(int id)
         {
@@ -150,6 +156,42 @@ namespace EcommerceApp.Controllers
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = $"El pedido #{pedido.Id} fue actualizado a estado: {estadoPedido}.";
+
+            return RedirectToAction(nameof(AdminCompras));
+        }
+
+        // Solo Admin real puede eliminar una venta
+        // DemoAdmin NO puede eliminar.
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarPedido(int id)
+        {
+            var pedido = await _context.Pedidos
+                .Include(p => p.Detalles)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (pedido == null)
+            {
+                TempData["ErrorMessage"] = "El pedido que intentas eliminar no existe.";
+                return RedirectToAction(nameof(AdminCompras));
+            }
+
+            var totalPedido = pedido.Total;
+            var correoCliente = pedido.Correo;
+            var nombreCliente = pedido.NombreCompleto;
+
+            if (pedido.Detalles.Any())
+            {
+                _context.PedidosDetalle.RemoveRange(pedido.Detalles);
+            }
+
+            _context.Pedidos.Remove(pedido);
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                $"El pedido #{id} de {nombreCliente} ({correoCliente}) por $ {totalPedido:N0} fue eliminado correctamente.";
 
             return RedirectToAction(nameof(AdminCompras));
         }

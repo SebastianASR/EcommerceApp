@@ -125,6 +125,11 @@
             border-color: rgba(255,193,7,0.35);
         }
 
+        .dropdown-feature-card-info:hover {
+            background: rgba(13, 202, 240, 0.12);
+            border-color: rgba(13, 202, 240, 0.35);
+        }
+
         .alert-z {
             animation: fadeSlideDown 0.35s ease both;
         }
@@ -257,29 +262,11 @@
 
                                         <li>
                                             <a class="dropdown-item rounded-3 p-0 mb-2" asp-controller="Pedidos" asp-action="AdminCompras">
-                                                <div class="dropdown-feature-card dropdown-feature-card-warning rounded-3 p-3">
+                                                <div class="dropdown-feature-card dropdown-feature-card-info rounded-3 p-3">
                                                     <div class="d-flex align-items-center justify-content-between mb-1">
-                                                        <span class="fw-bold text-warning">
+                                                        <span class="fw-bold text-info">
                                                             <i class="fa-solid fa-receipt me-2"></i>Compras de clientes
                                                         </span>
-
-                                                        @if (User.IsInRole("DemoAdmin"))
-                                                        {
-                                                            <span class="badge bg-warning text-dark">
-                                                                Solo lectura
-                                                            </span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="badge bg-success text-dark">
-                                                                Gestión
-                                                            </span>
-                                                        }
-                                                    </div>
-
-                                                    <div class="small text-light opacity-75">
-                                                        Visualiza pedidos, clientes, estados y totales vendidos.
-                                                    </div>
                                                 </div>
                                             </a>
                                         </li>

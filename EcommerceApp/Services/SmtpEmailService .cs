@@ -36,7 +36,8 @@ namespace EcommerceApp.Services
             using var client = new SmtpClient(_settings.Host, _settings.Port)
             {
                 EnableSsl = true,
-                Credentials = new NetworkCredential(_settings.User, _settings.Password)
+                Credentials = new NetworkCredential(_settings.User, _settings.Password),
+                Timeout = 10000
             };
 
             await client.SendMailAsync(message);

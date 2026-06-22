@@ -2,15 +2,122 @@
 
 @{
     ViewData["Title"] = "Panel Administrativo";
+    bool esDemoAdmin = User.IsInRole("DemoAdmin");
+    bool esAdminReal = User.IsInRole("Admin");
+    bool incluirArchivadas = ViewBag.IncluirArchivadas == true;
+
+    int totalSolicitudes = Model.Count;
+    int nuevas = Model.Count(x => string.IsNullOrWhiteSpace(x.Estado) || x.Estado == "Nuevo");
+    int contactadas = Model.Count(x => x.Estado == "Contactado");
+    int archivadas = Model.Count(x => x.Archivada);
 }
 
 <div class="container py-5 text-start">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
         <div>
-            <span class="badge bg-warning text-dark px-3 py-1 fw-bold text-uppercase">Área Restringida</span>
-            <h2 class="fw-black text-dark mt-2 mb-0"><i class="fa-solid fa-sliders text-primary me-2"></i>Panel <span class="text-primary">Administrativo</span></h2>
+            @if (esDemoAdmin)
+            {
+                <span class="badge bg-warning text-dark px-3 py-1 fw-bold text-uppercase">Modo Demostración</span>
+            }
+            else
+            {
+                <span class="badge bg-warning text-dark px-3 py-1 fw-bold text-uppercase">Área Restringida</span>
+            }
+
+            <h2 class="fw-black text-dark mt-2 mb-0">
+                <i class="fa-solid fa-sliders text-primary me-2"></i>
+                Panel <span class="text-primary">Administrativo</span>
+            </h2>
+
+            @if (esDemoAdmin)
+            {
+                <p class="text-muted small mt-2 mb-0">
+                    Puedes revisar las solicitudes y visualizar las acciones disponibles. Las modificaciones están bloqueadas para proteger la base pública.
+                </p>
+            }
         </div>
-        <span class="badge bg-dark border border-secondary px-3 py-2 text-light font-monospace tracking-wide">Módulo: Enterprise_Leads_V1</span>
+
+        <div class="d-flex gap-2 flex-wrap justify-content-end">
+            <span class="badge bg-dark border border-secondary px-3 py-2 text-light font-monospace tracking-wide">
+                Módulo: Enterprise_Leads_V2
+            </span>
+
+            <a asp-action="ExportarSolicitudesExcel" class="btn btn-sm btn-outline-success fw-bold">
+                <i class="fa-solid fa-file-excel me-1"></i> Exportar Excel
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["MensajeExito"] != null)
+    {
+        <div class="alert alert-success border-0 shadow-sm rounded-3 fw-semibold">
+            <i class="fa-solid fa-check-circle me-2"></i>@TempData["MensajeExito"]
+        </div>
+    }
+
+    @if (TempData["MensajeError"] != null)
+    {
+        <div class="alert alert-danger border-0 shadow-sm rounded-3 fw-semibold">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>@TempData["MensajeError"]
+        </div>
+    }
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body">
+                    <div class="text-muted small fw-bold text-uppercase">Solicitudes visibles</div>
+                    <h3 class="fw-black text-dark mb-0">@totalSolicitudes</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body">
+                    <div class="text-muted small fw-bold text-uppercase">Nuevas</div>
+                    <h3 class="fw-black text-primary mb-0">@nuevas</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body">
+                    <div class="text-muted small fw-bold text-uppercase">Contactadas</div>
+                    <h3 class="fw-black text-success mb-0">@contactadas</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body">
+                    <div class="text-muted small fw-bold text-uppercase">Archivadas visibles</div>
+                    <h3 class="fw-black text-secondary mb-0">@archivadas</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div class="small text-muted">
+            Gestión comercial de solicitudes VIP, infraestructura y leads técnicos.
+        </div>
+
+        @if (incluirArchivadas)
+        {
+            <a asp-action="VerSolicitudes" asp-route-incluirArchivadas="false" class="btn btn-sm btn-outline-primary fw-bold">
+                <i class="fa-solid fa-eye me-1"></i> Ver solo activas
+            </a>
+        }
+        else
+        {
+            <a asp-action="VerSolicitudes" asp-route-incluirArchivadas="true" class="btn btn-sm btn-outline-secondary fw-bold">
+                <i class="fa-solid fa-box-archive me-1"></i> Incluir archivadas
+            </a>
+        }
     </div>
 
     @if (!Model.Any())
@@ -30,31 +137,118 @@
                         <tr>
                             <th class="py-3 ps-4">ID</th>
                             <th class="py-3">Empresa / Partner</th>
-                            <th class="py-3">Contacto Correo</th>
-                            <th class="py-3">Infraestructura Solicitada</th>
-                            <th class="py-3">Detalle Técnico</th>
-                            <th class="py-3 pe-4 text-end">Fecha Registro</th>
+                            <th class="py-3">Contacto</th>
+                            <th class="py-3">Infraestructura</th>
+                            <th class="py-3">Estado</th>
+                            <th class="py-3">Fecha</th>
+                            <th class="py-3 pe-4 text-end">Acciones</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         @foreach (var sol in Model)
                         {
-                            <tr>
+                            string estado = string.IsNullOrWhiteSpace(sol.Estado) ? "Nuevo" : sol.Estado;
+
+                            string estadoClass = estado switch
+                            {
+                                "Nuevo" => "bg-primary",
+                                "Contactado" => "bg-success",
+                                "En evaluación" => "bg-info text-dark",
+                                "Cotizado" => "bg-warning text-dark",
+                                "Cerrado" => "bg-dark",
+                                "Descartado" => "bg-secondary",
+                                _ => "bg-secondary"
+                            };
+
+                            <tr class="@(sol.Archivada ? "table-light opacity-75" : "")">
                                 <td class="ps-4 fw-bold text-primary">#@sol.Id</td>
-                                <td class="fw-bold text-dark">@sol.NombreEmpresa</td>
-                                <td>
-                                    <a href="mailto:@sol.Correo" class="text-decoration-none fw-semibold"><i class="fa-solid fa-envelope me-1 text-muted"></i> @sol.Correo</a>
+
+                                <td class="fw-bold text-dark">
+                                    @sol.NombreEmpresa
+
+                                    @if (sol.Archivada)
+                                    {
+                                        <span class="badge bg-secondary ms-1">Archivada</span>
+                                    }
                                 </td>
+
+                                <td>
+                                    <a href="mailto:@sol.Correo" class="text-decoration-none fw-semibold">
+                                        <i class="fa-solid fa-envelope me-1 text-muted"></i> @sol.Correo
+                                    </a>
+                                </td>
+
                                 <td>
                                     <span class="badge bg-opacity-10 bg-primary text-primary border border-primary border-opacity-25 px-2 py-1 small fw-bold">
                                         @sol.TipoProyecto
                                     </span>
                                 </td>
-                                <td class="text-muted small text-truncate" style="max-width: 250px;" title="@sol.Detalles">
-                                    @sol.Detalles
+
+                                <td>
+                                    <span class="badge @estadoClass px-2 py-1">
+                                        @estado
+                                    </span>
                                 </td>
-                                <td class="text-end pe-4 text-muted small">
+
+                                <td class="text-muted small">
                                     @sol.FechaSolicitud.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                </td>
+
+                                <td class="text-end pe-4">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary fw-bold me-1"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#detalleSolicitud-@sol.Id"
+                                            title="Ver detalle">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+
+                                    @if (esAdminReal)
+                                    {
+                                        <form asp-action="MarcarSolicitudContactada" asp-route-id="@sol.Id" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-success fw-bold me-1" title="Marcar como contactada">
+                                                <i class="fa-solid fa-phone"></i>
+                                            </button>
+                                        </form>
+
+                                        @if (sol.Archivada)
+                                        {
+                                            <form asp-action="RestaurarSolicitud" asp-route-id="@sol.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary fw-bold me-1" title="Restaurar">
+                                                    <i class="fa-solid fa-rotate-left"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="ArchivarSolicitud" asp-route-id="@sol.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary fw-bold me-1" title="Archivar">
+                                                    <i class="fa-solid fa-box-archive"></i>
+                                                </button>
+                                            </form>
+                                        }
+
+                                        <form asp-action="EliminarSolicitud" asp-route-id="@sol.Id" method="post" class="d-inline" onsubmit="return confirm('¿Seguro que quieres eliminar esta solicitud permanentemente?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger fw-bold" title="Eliminar">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-secondary fw-bold me-1" disabled title="Acción bloqueada en demo">
+                                            <i class="fa-solid fa-lock"></i>
+                                        </button>
+
+                                        <button type="button" class="btn btn-sm btn-outline-secondary fw-bold me-1" disabled title="Acción bloqueada en demo">
+                                            <i class="fa-solid fa-lock"></i>
+                                        </button>
+
+                                        <button type="button" class="btn btn-sm btn-outline-secondary fw-bold" disabled title="Acción bloqueada en demo">
+                                            <i class="fa-solid fa-lock"></i>
+                                        </button>
+                                    }
                                 </td>
                             </tr>
                         }
@@ -62,5 +256,130 @@
                 </table>
             </div>
         </div>
+
+        @foreach (var sol in Model)
+        {
+            string estado = string.IsNullOrWhiteSpace(sol.Estado) ? "Nuevo" : sol.Estado;
+
+            string estadoClass = estado switch
+            {
+                "Nuevo" => "bg-primary",
+                "Contactado" => "bg-success",
+                "En evaluación" => "bg-info text-dark",
+                "Cotizado" => "bg-warning text-dark",
+                "Cerrado" => "bg-dark",
+                "Descartado" => "bg-secondary",
+                _ => "bg-secondary"
+            };
+
+            <div class="modal fade" id="detalleSolicitud-@sol.Id" tabindex="-1" aria-labelledby="detalleSolicitudLabel-@sol.Id" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg rounded-4">
+                        <div class="modal-header bg-dark text-white rounded-top-4">
+                            <div>
+                                <h5 class="modal-title fw-black" id="detalleSolicitudLabel-@sol.Id">
+                                    Solicitud #@sol.Id — @sol.NombreEmpresa
+                                </h5>
+                                <div class="small text-white-50">
+                                    Registrada el @sol.FechaSolicitud.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="small text-muted fw-bold text-uppercase">Empresa / Partner</div>
+                                    <div class="fw-bold text-dark">@sol.NombreEmpresa</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="small text-muted fw-bold text-uppercase">Correo</div>
+                                    <a href="mailto:@sol.Correo" class="fw-semibold text-decoration-none">@sol.Correo</a>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="small text-muted fw-bold text-uppercase">Infraestructura solicitada</div>
+                                    <span class="badge bg-primary">@sol.TipoProyecto</span>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="small text-muted fw-bold text-uppercase">Estado actual</div>
+                                    <span class="badge @estadoClass">@estado</span>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="small text-muted fw-bold text-uppercase">Detalle técnico</div>
+                                    <div class="border rounded-3 p-3 bg-light text-dark">
+                                        @sol.Detalles
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="small text-muted fw-bold text-uppercase">Nota interna</div>
+
+                                    @if (esAdminReal)
+                                    {
+                                        <form asp-action="GuardarNotaSolicitud" asp-route-id="@sol.Id" method="post">
+                                            <textarea name="notaInterna" class="form-control rounded-3" rows="3" placeholder="Ej: Se contactó por correo, interesado en servidores SQL.">@sol.NotaInterna</textarea>
+
+                                            <button type="submit" class="btn btn-primary fw-bold mt-2">
+                                                <i class="fa-solid fa-floppy-disk me-1"></i> Guardar nota
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <div class="border rounded-3 p-3 bg-light text-muted">
+                                            @(string.IsNullOrWhiteSpace(sol.NotaInterna) ? "Sin nota interna registrada." : sol.NotaInterna)
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-secondary fw-bold mt-2" disabled>
+                                            <i class="fa-solid fa-lock me-1"></i> Edición bloqueada en demo
+                                        </button>
+                                    }
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="small text-muted fw-bold text-uppercase">Cambiar estado</div>
+
+                                    @if (esAdminReal)
+                                    {
+                                        <form asp-action="CambiarEstadoSolicitud" asp-route-id="@sol.Id" method="post" class="d-flex gap-2 flex-wrap">
+                                            <select name="estado" class="form-select w-auto">
+                                                @foreach (var itemEstado in new[] { "Nuevo", "Contactado", "En evaluación", "Cotizado", "Cerrado", "Descartado" })
+                                                {
+                                                    <option value="@itemEstado" selected="@(estado == itemEstado)">
+                                                        @itemEstado
+                                                    </option>
+                                                }
+                                            </select>
+
+                                            <button type="submit" class="btn btn-success fw-bold">
+                                                <i class="fa-solid fa-arrows-rotate me-1"></i> Actualizar estado
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-outline-secondary fw-bold" disabled>
+                                            <i class="fa-solid fa-lock me-1"></i> Cambio de estado bloqueado en demo
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-dark fw-bold" data-bs-dismiss="modal">
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
     }
 </div>

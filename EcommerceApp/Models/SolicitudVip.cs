@@ -18,7 +18,15 @@ namespace EcommerceApp.Models
         [Required]
         public string Detalles { get; set; } = null!;
 
-  
         public DateTime FechaSolicitud { get; set; } = DateTime.UtcNow;
+
+        // --- Gestión administrativa ---
+        public string Estado { get; set; } = "Nuevo";
+
+        public string? NotaInterna { get; set; }
+
+        public bool Archivada { get; set; } = false;
+
+        public DateTime? FechaUltimaGestion { get; set; }
     }
 }

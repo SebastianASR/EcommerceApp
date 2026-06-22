@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using EcommerceApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ClosedXML.Excel;
 
 namespace EcommerceApp.Controllers
 {
@@ -80,7 +82,6 @@ namespace EcommerceApp.Controllers
             }
         }
 
-        // --- EL MOTOR AGRUPADOR DE LINQ ---
         private List<CarritoItem> ObtenerBolsaAgrupada(List<int> listaIds)
         {
             if (!listaIds.Any()) return new List<CarritoItem>();
@@ -201,6 +202,9 @@ namespace EcommerceApp.Controllers
             if (ModelState.IsValid)
             {
                 modelo.FechaSolicitud = DateTime.UtcNow;
+                modelo.Estado = "Nuevo";
+                modelo.Archivada = false;
+
                 _context.SolicitudesVip.Add(modelo);
                 await _context.SaveChangesAsync();
 
@@ -211,11 +215,238 @@ namespace EcommerceApp.Controllers
             return View(modelo);
         }
 
+        // --- PANEL DE SOLICITUDES / LEADS ---
         [Authorize(Roles = "Admin,DemoAdmin")]
-        public IActionResult VerSolicitudes()
+        public IActionResult VerSolicitudes(bool incluirArchivadas = false)
         {
-            var lista = _context.SolicitudesVip.OrderByDescending(x => x.FechaSolicitud).ToList();
+            var query = _context.SolicitudesVip.AsQueryable();
+
+            if (!incluirArchivadas)
+            {
+                query = query.Where(x => !x.Archivada);
+            }
+
+            var lista = query
+                .OrderByDescending(x => x.FechaSolicitud)
+                .ToList();
+
+            ViewBag.IncluirArchivadas = incluirArchivadas;
+
             return View(lista);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarcarSolicitudContactada(int id)
+        {
+            var solicitud = await _context.SolicitudesVip.FindAsync(id);
+
+            if (solicitud == null)
+                return NotFound();
+
+            solicitud.Estado = "Contactado";
+            solicitud.FechaUltimaGestion = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            TempData["MensajeExito"] = $"La solicitud #{id} fue marcada como contactada.";
+            return RedirectToAction("VerSolicitudes");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CambiarEstadoSolicitud(int id, string estado)
+        {
+            var estadosPermitidos = new[] { "Nuevo", "Contactado", "En evaluación", "Cotizado", "Cerrado", "Descartado" };
+
+            if (!estadosPermitidos.Contains(estado))
+            {
+                TempData["MensajeError"] = "El estado seleccionado no es válido.";
+                return RedirectToAction("VerSolicitudes");
+            }
+
+            var solicitud = await _context.SolicitudesVip.FindAsync(id);
+
+            if (solicitud == null)
+                return NotFound();
+
+            solicitud.Estado = estado;
+            solicitud.FechaUltimaGestion = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            TempData["MensajeExito"] = $"El estado de la solicitud #{id} fue actualizado.";
+            return RedirectToAction("VerSolicitudes");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GuardarNotaSolicitud(int id, string? notaInterna)
+        {
+            var solicitud = await _context.SolicitudesVip.FindAsync(id);
+
+            if (solicitud == null)
+                return NotFound();
+
+            solicitud.NotaInterna = notaInterna;
+            solicitud.FechaUltimaGestion = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            TempData["MensajeExito"] = $"La nota interna de la solicitud #{id} fue guardada.";
+            return RedirectToAction("VerSolicitudes");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ArchivarSolicitud(int id)
+        {
+            var solicitud = await _context.SolicitudesVip.FindAsync(id);
+
+            if (solicitud == null)
+                return NotFound();
+
+            solicitud.Archivada = true;
+            solicitud.FechaUltimaGestion = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            TempData["MensajeExito"] = $"La solicitud #{id} fue archivada.";
+            return RedirectToAction("VerSolicitudes");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RestaurarSolicitud(int id)
+        {
+            var solicitud = await _context.SolicitudesVip.FindAsync(id);
+
+            if (solicitud == null)
+                return NotFound();
+
+            solicitud.Archivada = false;
+            solicitud.FechaUltimaGestion = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            TempData["MensajeExito"] = $"La solicitud #{id} fue restaurada.";
+            return RedirectToAction("VerSolicitudes", new { incluirArchivadas = true });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarSolicitud(int id)
+        {
+            var solicitud = await _context.SolicitudesVip.FindAsync(id);
+
+            if (solicitud == null)
+                return NotFound();
+
+            _context.SolicitudesVip.Remove(solicitud);
+            await _context.SaveChangesAsync();
+
+            TempData["MensajeExito"] = $"La solicitud #{id} fue eliminada permanentemente.";
+            return RedirectToAction("VerSolicitudes");
+        }
+
+        [Authorize(Roles = "Admin,DemoAdmin")]
+        public IActionResult ExportarSolicitudesExcel()
+        {
+            var solicitudes = _context.SolicitudesVip
+                .OrderByDescending(x => x.FechaSolicitud)
+                .ToList();
+
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Solicitudes");
+
+            string[] encabezados =
+            {
+        "ID",
+        "Empresa",
+        "Correo",
+        "Tipo de Proyecto",
+        "Estado",
+        "Archivada",
+        "Fecha Solicitud",
+        "Fecha Última Gestión",
+        "Detalles",
+        "Nota Interna"
+    };
+
+            for (int i = 0; i < encabezados.Length; i++)
+            {
+                worksheet.Cell(1, i + 1).Value = encabezados[i];
+            }
+
+            int fila = 2;
+
+            foreach (var s in solicitudes)
+            {
+                worksheet.Cell(fila, 1).Value = s.Id;
+                worksheet.Cell(fila, 2).Value = s.NombreEmpresa;
+                worksheet.Cell(fila, 3).Value = s.Correo;
+                worksheet.Cell(fila, 4).Value = s.TipoProyecto;
+                worksheet.Cell(fila, 5).Value = string.IsNullOrWhiteSpace(s.Estado) ? "Nuevo" : s.Estado;
+                worksheet.Cell(fila, 6).Value = s.Archivada ? "Sí" : "No";
+                worksheet.Cell(fila, 7).Value = s.FechaSolicitud.ToLocalTime();
+
+                if (s.FechaUltimaGestion.HasValue)
+                {
+                    worksheet.Cell(fila, 8).Value = s.FechaUltimaGestion.Value.ToLocalTime();
+                }
+                else
+                {
+                    worksheet.Cell(fila, 8).Value = "Sin gestión";
+                }
+
+                worksheet.Cell(fila, 9).Value = s.Detalles;
+                worksheet.Cell(fila, 10).Value = string.IsNullOrWhiteSpace(s.NotaInterna) ? "Sin nota interna" : s.NotaInterna;
+
+                fila++;
+            }
+
+            var rango = worksheet.Range(1, 1, Math.Max(fila - 1, 1), encabezados.Length);
+            var tabla = rango.CreateTable("TablaSolicitudesZCommerce");
+            tabla.Theme = XLTableTheme.TableStyleMedium2;
+
+            worksheet.SheetView.FreezeRows(1);
+
+            worksheet.Row(1).Style.Font.Bold = true;
+            worksheet.Row(1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            worksheet.Row(1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+            worksheet.Column(1).Width = 8;
+            worksheet.Column(2).Width = 28;
+            worksheet.Column(3).Width = 32;
+            worksheet.Column(4).Width = 32;
+            worksheet.Column(5).Width = 18;
+            worksheet.Column(6).Width = 14;
+            worksheet.Column(7).Width = 22;
+            worksheet.Column(8).Width = 24;
+            worksheet.Column(9).Width = 45;
+            worksheet.Column(10).Width = 45;
+
+            worksheet.Columns(7, 8).Style.DateFormat.Format = "dd/MM/yyyy HH:mm";
+
+            worksheet.Columns(9, 10).Style.Alignment.WrapText = true;
+            worksheet.Columns().Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+
+            var contenido = stream.ToArray();
+
+            return File(
+                contenido,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"solicitudes-zcommerce-{DateTime.Now:yyyyMMddHHmm}.xlsx"
+            );
         }
 
         // --- MÓDULO DE INVENTARIO (CRUD DE PRODUCTOS) ---

@@ -1,17 +1,17 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using EcommerceApp.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using EcommerceApp.Models;
 
 namespace EcommerceApp.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
         public AccountController(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -19,9 +19,12 @@ namespace EcommerceApp.Controllers
 
         // --- REGISTRO ---
         [HttpGet]
-        public IActionResult Register()
+        public IActionResult Register(string? returnUrl = null)
         {
-            return View();
+            return View(new RegisterViewModel
+            {
+                ReturnUrl = returnUrl
+            });
         }
 
         [HttpPost]
@@ -33,21 +36,38 @@ namespace EcommerceApp.Controllers
                 return View(model);
             }
 
-            var user = new IdentityUser
+            var user = new ApplicationUser
             {
                 UserName = model.Email,
                 Email = model.Email,
-                EmailConfirmed = true
+                EmailConfirmed = true,
+
+                Nombre = model.Nombre,
+                Apellido = model.Apellido,
+                PhoneNumber = model.Telefono,
+                TelefonoContacto = model.Telefono,
+
+                Region = model.Region,
+                Comuna = model.Comuna,
+                Calle = model.Calle,
+                Numero = model.Numero,
+                DeptoBlockOficina = model.DeptoBlockOficina,
+
+                FechaRegistro = DateTime.UtcNow
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
             {
-                // Por defecto, cualquier persona que se registre en la web es "Cliente"
                 await _userManager.AddToRoleAsync(user, "Cliente");
 
                 await _signInManager.SignInAsync(user, isPersistent: false);
+
+                if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+                {
+                    return LocalRedirect(model.ReturnUrl);
+                }
 
                 return RedirectToAction("Index", "Home");
             }
@@ -62,9 +82,12 @@ namespace EcommerceApp.Controllers
 
         // --- LOGIN ---
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
-            return View();
+            return View(new LoginViewModel
+            {
+                ReturnUrl = returnUrl
+            });
         }
 
         [HttpPost]
@@ -79,12 +102,17 @@ namespace EcommerceApp.Controllers
             var result = await _signInManager.PasswordSignInAsync(
                 model.Email,
                 model.Password,
-                isPersistent: false,
+                isPersistent: model.RememberMe,
                 lockoutOnFailure: true
             );
 
             if (result.Succeeded)
             {
+                if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+                {
+                    return LocalRedirect(model.ReturnUrl);
+                }
+
                 return RedirectToAction("Index", "Home");
             }
 
@@ -92,7 +120,7 @@ namespace EcommerceApp.Controllers
             {
                 ModelState.AddModelError(
                     "",
-                    "Tu cuenta fue bloqueada temporalmente por demasiados intentos fallidos. Intenta nuevamente en 10 minutos."
+                    "Tu cuenta fue bloqueada temporalmente por demasiados intentos fallidos. Intenta nuevamente en 15 minutos."
                 );
 
                 return View(model);

@@ -1,52 +1,193 @@
 ﻿@model EcommerceApp.Models.RegisterViewModel
 
 @{
-    ViewData["Title"] = "Registro de Partner";
+    ViewData["Title"] = "Registro de Cliente";
 }
 
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-5">
+        <div class="col-lg-7">
             <div class="card shadow-lg border rounded-4 bg-dark text-white p-4" style="border-color: #334155 !important;">
                 <div class="card-body text-start">
                     <div class="text-center mb-4">
-                        <h3 class="fw-black text-success mb-1"><i class="fa-solid fa-user-plus me-2"></i>REGISTRO</h3>
-                        <p class="text-muted small">Crea tu cuenta para guardar tus configuraciones de hardware</p>
+                        <h3 class="fw-black text-success mb-1">
+                            <i class="fa-solid fa-user-plus me-2"></i>REGISTRO CLIENTE
+                        </h3>
+
+                        <p class="text-muted small">
+                            Crea tu cuenta para guardar tus datos y acelerar futuras compras
+                        </p>
                     </div>
 
                     <form asp-action="Register" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <input asp-for="ReturnUrl" type="hidden" />
+
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
-                        <div class="mb-3">
-                            <label asp-for="Email" class="form-label small fw-bold text-secondary">CORREO ELECTRÓNICO</label>
-                            <input asp-for="Email" type="email" class="form-control bg-transparent text-white border-secondary rounded-3 py-2" placeholder="tu-correo@gmail.com" required />
+                        <h6 class="fw-bold text-light border-bottom border-secondary pb-2 mb-3">
+                            1. Datos personales
+                        </h6>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="Nombre" class="form-label small fw-bold text-secondary">
+                                    NOMBRE
+                                </label>
+
+                                <input asp-for="Nombre"
+                                       class="form-control bg-transparent text-white border-secondary rounded-3 py-2"
+                                       placeholder="Sebastián" />
+
+                                <span asp-validation-for="Nombre" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Apellido" class="form-label small fw-bold text-secondary">
+                                    APELLIDO
+                                </label>
+
+                                <input asp-for="Apellido"
+                                       class="form-control bg-transparent text-white border-secondary rounded-3 py-2"
+                                       placeholder="Sandoval" />
+
+                                <span asp-validation-for="Apellido" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label small fw-bold text-secondary">
+                                    CORREO ELECTRÓNICO
+                                </label>
+
+                                <input asp-for="Email"
+                                       type="email"
+                                       class="form-control bg-transparent text-white border-secondary rounded-3 py-2"
+                                       placeholder="tu-correo@gmail.com" />
+
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Telefono" class="form-label small fw-bold text-secondary">
+                                    TELÉFONO
+                                </label>
+
+                                <input asp-for="Telefono"
+                                       class="form-control bg-transparent text-white border-secondary rounded-3 py-2"
+                                       placeholder="+56912345678" />
+
+                                <span asp-validation-for="Telefono" class="text-danger small"></span>
+                            </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label asp-for="Password" class="form-label small fw-bold text-secondary">
-                                CONTRASEÑA SEGURA
-                            </label>
+                        <h6 class="fw-bold text-light border-bottom border-secondary pb-2 mb-3">
+                            2. Dirección de despacho opcional
+                        </h6>
 
-                            <input asp-for="Password"
-                                   type="password"
-                                   class="form-control bg-transparent text-white border-secondary rounded-3 py-2"
-                                   placeholder="••••••••"
-                                   required />
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="Region" class="form-label small fw-bold text-secondary">
+                                    REGIÓN
+                                </label>
 
-                            <small class="d-block mt-2 text-secondary">
-                                Debe tener mínimo 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.
-                            </small>
+                                <input asp-for="Region"
+                                       class="form-control bg-transparent text-white border-secondary rounded-3 py-2"
+                                       placeholder="Región Metropolitana de Santiago" />
+                            </div>
 
-                            <span asp-validation-for="Password" class="text-danger small"></span>
+                            <div class="col-md-6">
+                                <label asp-for="Comuna" class="form-label small fw-bold text-secondary">
+                                    COMUNA
+                                </label>
+
+                                <input asp-for="Comuna"
+                                       class="form-control bg-transparent text-white border-secondary rounded-3 py-2"
+                                       placeholder="Quinta Normal" />
+                            </div>
+
+                            <div class="col-md-8">
+                                <label asp-for="Calle" class="form-label small fw-bold text-secondary">
+                                    CALLE / AVENIDA
+                                </label>
+
+                                <input asp-for="Calle"
+                                       class="form-control bg-transparent text-white border-secondary rounded-3 py-2"
+                                       placeholder="Av. Principal" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="Numero" class="form-label small fw-bold text-secondary">
+                                    NÚMERO
+                                </label>
+
+                                <input asp-for="Numero"
+                                       class="form-control bg-transparent text-white border-secondary rounded-3 py-2"
+                                       placeholder="1234" />
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="DeptoBlockOficina" class="form-label small fw-bold text-secondary">
+                                    DEPTO / BLOCK / OFICINA
+                                </label>
+
+                                <input asp-for="DeptoBlockOficina"
+                                       class="form-control bg-transparent text-white border-secondary rounded-3 py-2"
+                                       placeholder="Depto 402, Block C" />
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold text-light border-bottom border-secondary pb-2 mb-3">
+                            3. Seguridad
+                        </h6>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="Password" class="form-label small fw-bold text-secondary">
+                                    CONTRASEÑA SEGURA
+                                </label>
+
+                                <input asp-for="Password"
+                                       type="password"
+                                       class="form-control bg-transparent text-white border-secondary rounded-3 py-2"
+                                       placeholder="••••••••" />
+
+                                <small class="d-block mt-2 text-secondary">
+                                    Mínimo 8 caracteres, mayúscula, minúscula, número y símbolo.
+                                </small>
+
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="ConfirmPassword" class="form-label small fw-bold text-secondary">
+                                    CONFIRMAR CONTRASEÑA
+                                </label>
+
+                                <input asp-for="ConfirmPassword"
+                                       type="password"
+                                       class="form-control bg-transparent text-white border-secondary rounded-3 py-2"
+                                       placeholder="••••••••" />
+
+                                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                            </div>
                         </div>
 
                         <button type="submit" class="btn btn-success w-100 fw-bold py-2 rounded-3 shadow-sm mb-3">
-                            Crear Cuenta Nueva <i class="fa-solid fa-circle-check ms-1"></i>
+                            Crear Cuenta Nueva
+                            <i class="fa-solid fa-circle-check ms-1"></i>
                         </button>
                     </form>
 
                     <div class="text-center pt-2 border-top border-secondary mt-3">
-                        <p class="mb-0 small text-muted">¿Ya eres miembro? <a asp-action="Login" class="text-success text-decoration-none fw-bold">Inicia sesión</a></p>
+                        <p class="mb-0 small text-muted">
+                            ¿Ya tienes cuenta?
+                            <a asp-action="Login"
+                               asp-route-returnUrl="@Model.ReturnUrl"
+                               class="text-success text-decoration-none fw-bold">
+                                Inicia sesión
+                            </a>
+                        </p>
                     </div>
                 </div>
             </div>

@@ -1,100 +1,246 @@
-﻿@model EcommerceApp.Models.Pedido
+﻿@model EcommerceApp.Models.CheckoutViewModel
 
 @{
     ViewData["Title"] = "Checkout";
-    var resumenBolsa = ViewBag.ResumenBolsa as List<EcommerceApp.Models.CarritoItem> ?? new List<EcommerceApp.Models.CarritoItem>();
 }
 
 <div class="container py-5 text-start">
-    <h2 class="fw-black mb-4"><i class="fa-solid fa-credit-card text-primary me-2"></i>Finalizar Compra</h2>
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+        <div>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 fw-bold">
+                CHECKOUT SEGURO
+            </span>
+
+            <h2 class="fw-black mb-1 mt-2">
+                <i class="fa-solid fa-credit-card text-primary me-2"></i>Finalizar Compra
+            </h2>
+
+            <p class="text-muted mb-0">
+                Compra como invitado o usa tu cuenta para guardar tus datos de despacho.
+            </p>
+        </div>
+
+        <a asp-controller="Home" asp-action="Catalogo" class="btn btn-outline-dark fw-bold rounded-3">
+            <i class="fa-solid fa-arrow-left me-1"></i> Seguir comprando
+        </a>
+    </div>
 
     @if (!ViewData.ModelState.IsValid)
     {
         <div class="alert alert-danger border-0 rounded-4 shadow-sm mb-4">
-            <h6 class="fw-bold mb-1"><i class="fa-solid fa-triangle-exclamation me-2"></i>Sistema de Seguridad:</h6>
+            <h6 class="fw-bold mb-1">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>Sistema de Seguridad:
+            </h6>
             <div asp-validation-summary="All" class="mb-0 small"></div>
         </div>
     }
 
     <form asp-action="Index" method="post" class="row g-4">
+        @Html.AntiForgeryToken()
+
         <div class="col-lg-7">
-            <div class="card shadow-sm border rounded-4 p-4 bg-white">
-                <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-address-card text-muted me-2"></i>1. Datos de Contacto</h5>
-                <div class="row g-3 mb-4">
-                    <div class="col-12">
-                        <label asp-for="NombreCompleto" class="form-label small fw-bold text-muted">NOMBRE COMPLETO</label>
-                        <input asp-for="NombreCompleto" class="form-control rounded-3" placeholder="Ej: Juan Pérez" required />
+            <div class="card shadow-sm border rounded-4 p-4 bg-white mb-4">
+                @if (Model.EsUsuarioAutenticado)
+                {
+                    <div class="alert alert-success border-0 rounded-4 mb-4">
+                        <div class="fw-bold">
+                            <i class="fa-solid fa-user-check me-1"></i> Estás comprando con tu cuenta
+                        </div>
+                        <div class="small">
+                            Tus datos fueron precargados. Puedes modificarlos para este pedido.
+                        </div>
                     </div>
+                }
+                else
+                {
+                    <div class="alert alert-primary border-0 rounded-4 mb-4">
+                        <div class="fw-bold">
+                            <i class="fa-solid fa-user me-1"></i> Compra como invitado
+                        </div>
+
+                        <div class="small mb-2">
+                            Puedes pagar sin crear cuenta. También puedes iniciar sesión o crear una cuenta al finalizar.
+                        </div>
+
+                        <a asp-controller="Account"
+                           asp-action="Login"
+                           asp-route-returnUrl="/Checkout/Index"
+                           class="btn btn-sm btn-outline-primary fw-bold rounded-3">
+                            <i class="fa-solid fa-right-to-bracket me-1"></i> Ya tengo cuenta
+                        </a>
+                    </div>
+                }
+
+                <h5 class="fw-bold mb-3 text-dark">
+                    <i class="fa-solid fa-address-card text-muted me-2"></i>1. Datos de Contacto
+                </h5>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="Nombre" class="form-label small fw-bold text-muted">NOMBRE</label>
+                        <input asp-for="Nombre" class="form-control rounded-3" placeholder="Ej: Juan" />
+                        <span asp-validation-for="Nombre" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Apellido" class="form-label small fw-bold text-muted">APELLIDO</label>
+                        <input asp-for="Apellido" class="form-control rounded-3" placeholder="Ej: Pérez" />
+                        <span asp-validation-for="Apellido" class="text-danger small"></span>
+                    </div>
+
                     <div class="col-md-6">
                         <label asp-for="Correo" class="form-label small fw-bold text-muted">CORREO ELECTRÓNICO</label>
-                        <input asp-for="Correo" type="email" class="form-control rounded-3" placeholder="juan.perez@correo.cl" required />
+                        <input asp-for="Correo" type="email" class="form-control rounded-3" placeholder="juan.perez@correo.cl" />
+                        <span asp-validation-for="Correo" class="text-danger small"></span>
                     </div>
+
                     <div class="col-md-6">
                         <label asp-for="Telefono" class="form-label small fw-bold text-muted">TELÉFONO MÓVIL</label>
-                        <input asp-for="Telefono" class="form-control rounded-3" placeholder="+56912345678" required />
+                        <input asp-for="Telefono" class="form-control rounded-3" placeholder="+56912345678" />
+                        <span asp-validation-for="Telefono" class="text-danger small"></span>
                     </div>
                 </div>
 
-                <h5 class="fw-bold mb-3 text-dark border-top pt-3"><i class="fa-solid fa-truck text-muted me-2"></i>2. Dirección de Despacho</h5>
+                <h5 class="fw-bold mb-3 text-dark border-top pt-3">
+                    <i class="fa-solid fa-truck text-muted me-2"></i>2. Dirección de Despacho
+                </h5>
+
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label asp-for="Region" class="form-label small fw-bold text-muted">REGIÓN</label>
-                        <select asp-for="Region" id="selectRegion" class="form-select rounded-3 text-dark" required>
-                            <option value="" selected disabled>Seleccione Región...</option>
+                        <select asp-for="Region" id="selectRegion" class="form-select rounded-3 text-dark">
+                            <option value="">Seleccione Región...</option>
                         </select>
+                        <span asp-validation-for="Region" class="text-danger small"></span>
                     </div>
+
                     <div class="col-md-6">
                         <label asp-for="Comuna" class="form-label small fw-bold text-muted">COMUNA</label>
-                        <select asp-for="Comuna" id="selectComuna" class="form-select rounded-3 text-dark" required disabled>
-                            <option value="" selected disabled>Seleccione Comuna...</option>
+                        <select asp-for="Comuna" id="selectComuna" class="form-select rounded-3 text-dark" disabled>
+                            <option value="">Seleccione Comuna...</option>
                         </select>
+                        <span asp-validation-for="Comuna" class="text-danger small"></span>
                     </div>
 
                     <div class="col-md-8">
                         <label asp-for="Calle" class="form-label small fw-bold text-muted">CALLE / AVENIDA</label>
-                        <input asp-for="Calle" class="form-control rounded-3" placeholder="Ej: Av. Libertador Bernardo O'Higgins" required />
+                        <input asp-for="Calle" class="form-control rounded-3" placeholder="Ej: Av. Libertador Bernardo O'Higgins" />
+                        <span asp-validation-for="Calle" class="text-danger small"></span>
                     </div>
+
                     <div class="col-md-4">
                         <label asp-for="Numero" class="form-label small fw-bold text-muted">NÚMERO</label>
-                        <input asp-for="Numero" class="form-control rounded-3" placeholder="Ej: 1234" required />
+                        <input asp-for="Numero" class="form-control rounded-3" placeholder="Ej: 1234" />
+                        <span asp-validation-for="Numero" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12">
-                        <label asp-for="DeptoBlockOficina" class="form-label small fw-bold text-muted">DEPARTAMENTO / BLOCK / CASA (OPCIONAL)</label>
+                        <label asp-for="DeptoBlockOficina" class="form-label small fw-bold text-muted">
+                            DEPARTAMENTO / BLOCK / CASA / OFICINA
+                        </label>
                         <input asp-for="DeptoBlockOficina" class="form-control rounded-3" placeholder="Ej: Depto 402, Block C" />
                     </div>
+
+                    <div class="col-12">
+                        <label asp-for="ComentarioCliente" class="form-label small fw-bold text-muted">
+                            COMENTARIO PARA EL DESPACHO
+                        </label>
+                        <textarea asp-for="ComentarioCliente"
+                                  class="form-control rounded-3"
+                                  rows="3"
+                                  placeholder="Ej: Llamar antes de entregar, dejar en conserjería, etc."></textarea>
+                    </div>
                 </div>
+            </div>
+
+            <div class="card shadow-sm border rounded-4 p-4 bg-white">
+                <h5 class="fw-bold mb-3 text-dark">
+                    <i class="fa-solid fa-user-shield text-muted me-2"></i>3. Cuenta de Cliente
+                </h5>
+
+                @if (Model.EsUsuarioAutenticado)
+                {
+                    <div class="form-check">
+                        <input asp-for="GuardarDatosEnCuenta" class="form-check-input" />
+                        <label asp-for="GuardarDatosEnCuenta" class="form-check-label fw-semibold text-dark">
+                            Guardar estos datos en mi cuenta para futuras compras
+                        </label>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-check mb-3">
+                        <input asp-for="CrearCuenta" class="form-check-input" id="checkCrearCuenta" />
+                        <label asp-for="CrearCuenta" class="form-check-label fw-semibold text-dark">
+                            Crear cuenta con estos datos para futuras compras
+                        </label>
+                    </div>
+
+                    <div id="bloqueCrearCuenta" class="row g-3 d-none">
+                        <div class="col-md-6">
+                            <label asp-for="Password" class="form-label small fw-bold text-muted">CONTRASEÑA</label>
+                            <input asp-for="Password" type="password" class="form-control rounded-3" placeholder="••••••••" />
+                            <small class="text-muted">
+                                Mínimo 8 caracteres, mayúscula, minúscula, número y símbolo.
+                            </small>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ConfirmPassword" class="form-label small fw-bold text-muted">CONFIRMAR CONTRASEÑA</label>
+                            <input asp-for="ConfirmPassword" type="password" class="form-control rounded-3" placeholder="••••••••" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
 
         <div class="col-lg-5">
             <div class="card shadow-lg border-0 rounded-4 p-4 bg-dark text-white sticky-top" style="top: 20px; z-index: 1;">
-                <h5 class="fw-bold mb-4 text-primary"><i class="fa-solid fa-basket-shopping me-2"></i>Resumen de la Orden</h5>
+                <h5 class="fw-bold mb-4 text-primary">
+                    <i class="fa-solid fa-basket-shopping me-2"></i>Resumen de la Orden
+                </h5>
 
                 <div class="d-flex flex-column gap-3 mb-4 overflow-y-auto pe-2" style="max-height: 320px;">
-                    @foreach (var item in resumenBolsa)
+                    @foreach (var item in Model.ResumenBolsa)
                     {
                         <div class="d-flex align-items-center justify-content-between bg-black bg-opacity-25 p-3 rounded-4">
                             <div class="d-flex align-items-center">
                                 <div class="position-relative me-3">
-                                    <img src="@item.Producto.ImagenUrl" class="rounded-3 border border-secondary border-opacity-50 object-fit-cover bg-white" style="width: 55px; height: 55px;">
+                                    <img src="@item.Producto.ImagenUrl"
+                                         class="rounded-3 border border-secondary border-opacity-50 object-fit-cover bg-white"
+                                         style="width: 55px; height: 55px;"
+                                         alt="@item.Producto.Nombre">
+
                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary border border-dark shadow-sm" style="font-size: 0.8rem;">
                                         @item.Cantidad
                                     </span>
                                 </div>
 
                                 <div style="max-width: 170px;">
-                                    <h6 class="mb-1 small fw-bold text-truncate" title="@item.Producto.Nombre">@item.Producto.Nombre</h6>
+                                    <h6 class="mb-1 small fw-bold text-truncate" title="@item.Producto.Nombre">
+                                        @item.Producto.Nombre
+                                    </h6>
+
                                     @if (item.Cantidad > 1)
                                     {
-                                        <small class="text-light opacity-75 d-block" style="font-size: 0.75rem;">$ @item.Producto.Precio.ToString("N0") c/u</small>
+                                        <small class="text-light opacity-75 d-block" style="font-size: 0.75rem;">
+                                            $ @item.Producto.Precio.ToString("N0") c/u
+                                        </small>
                                     }
                                     else
                                     {
-                                        <small class="text-light opacity-75 d-block" style="font-size: 0.75rem;">Unidad</small>
+                                        <small class="text-light opacity-75 d-block" style="font-size: 0.75rem;">
+                                            Unidad
+                                        </small>
                                     }
                                 </div>
                             </div>
-                            <span class="fw-bold text-white small">$ @((item.Producto.Precio * item.Cantidad).ToString("N0"))</span>
+
+                            <span class="fw-bold text-white small">
+                                $ @((item.Producto.Precio * item.Cantidad).ToString("N0"))
+                            </span>
                         </div>
                     }
                 </div>
@@ -104,10 +250,12 @@
                         <span class="text-light opacity-75">Subtotal productos:</span>
                         <span class="text-light fw-semibold">$ @Model.Total.ToString("N0")</span>
                     </div>
+
                     <div class="d-flex justify-content-between align-items-center mb-3 small border-bottom border-secondary border-opacity-50 pb-3">
                         <span class="text-light opacity-75">Despacho Priority:</span>
                         <span class="badge bg-success text-dark fw-bold px-2">¡GRATIS!</span>
                     </div>
+
                     <div class="d-flex justify-content-between align-items-end">
                         <span class="fw-bold text-light opacity-75">TOTAL A PAGAR:</span>
                         <h3 class="fw-black text-primary mb-0">$ @Model.Total.ToString("N0")</h3>
@@ -117,8 +265,12 @@
                 <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-3 rounded-4 shadow-lg">
                     Confirmar Pedido y Pagar <i class="fa-solid fa-shield-halved ms-2"></i>
                 </button>
+
                 <div class="text-center mt-3">
-                    <small class="text-light opacity-50" style="font-size: 0.75rem;"><i class="fa-solid fa-lock text-success me-1"></i> Transacción segura encriptada con Webpay Plus</small>
+                    <small class="text-light opacity-50" style="font-size: 0.75rem;">
+                        <i class="fa-solid fa-lock text-success me-1"></i>
+                        Transacción segura simulada con Webpay Plus Sandbox
+                    </small>
                 </div>
             </div>
         </div>
@@ -127,6 +279,25 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        const checkCrearCuenta = document.getElementById("checkCrearCuenta");
+        const bloqueCrearCuenta = document.getElementById("bloqueCrearCuenta");
+
+        function actualizarBloqueCuenta() {
+            if (!checkCrearCuenta || !bloqueCrearCuenta) return;
+
+            if (checkCrearCuenta.checked) {
+                bloqueCrearCuenta.classList.remove("d-none");
+            } else {
+                bloqueCrearCuenta.classList.add("d-none");
+            }
+        }
+
+        actualizarBloqueCuenta();
+
+        if (checkCrearCuenta) {
+            checkCrearCuenta.addEventListener("change", actualizarBloqueCuenta);
+        }
+
         const regionesChile = {
             "Región de Arica y Parinacota": ["Arica", "Camarones", "Putre", "General Lagos"],
             "Región de Tarapacá": ["Iquique", "Alto Hospicio", "Pozo Almonte", "Camiña", "Colchane", "Huara", "Pica"],
@@ -146,30 +317,60 @@
             "Región de Magallanes y de la Antártica Chilena": ["Punta Arenas", "Laguna Blanca", "Río Verde", "San Gregorio", "Cabo de Hornos (Ex Navarino)", "Antártica", "Porvenir", "Primavera", "Timaukel", "Natales", "Torres del Paine"]
         };
 
-        const selectRegion = document.getElementById('selectRegion');
-        const selectComuna = document.getElementById('selectComuna');
+        const regionGuardada = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Region ?? ""));
+        const comunaGuardada = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Comuna ?? ""));
 
-        for (let region in regionesChile) {
-            let option = document.createElement('option');
-            option.value = region;
-            option.text = region;
-            selectRegion.appendChild(option);
+        const selectRegion = document.getElementById("selectRegion");
+        const selectComuna = document.getElementById("selectComuna");
+
+        function cargarRegiones() {
+            if (!selectRegion) return;
+
+            Object.keys(regionesChile).forEach(function (region) {
+                const option = document.createElement("option");
+                option.value = region;
+                option.textContent = region;
+
+                if (region === regionGuardada) {
+                    option.selected = true;
+                }
+
+                selectRegion.appendChild(option);
+            });
         }
 
-        selectRegion.addEventListener('change', function () {
-            selectComuna.innerHTML = '<option value="" selected disabled>Seleccione Comuna...</option>';
-            if (this.value) {
-                selectComuna.disabled = false;
-                let comunasArray = regionesChile[this.value];
-                comunasArray.forEach(function (comuna) {
-                    let option = document.createElement('option');
-                    option.value = comuna;
-                    option.text = comuna;
-                    selectComuna.appendChild(option);
-                });
-            } else {
+        function cargarComunas(regionSeleccionada, comunaSeleccionada = "") {
+            if (!selectComuna) return;
+
+            selectComuna.innerHTML = '<option value="">Seleccione Comuna...</option>';
+
+            if (!regionSeleccionada || !regionesChile[regionSeleccionada]) {
                 selectComuna.disabled = true;
+                return;
             }
-        });
+
+            selectComuna.disabled = false;
+
+            regionesChile[regionSeleccionada].forEach(function (comuna) {
+                const option = document.createElement("option");
+                option.value = comuna;
+                option.textContent = comuna;
+
+                if (comuna === comunaSeleccionada) {
+                    option.selected = true;
+                }
+
+                selectComuna.appendChild(option);
+            });
+        }
+
+        cargarRegiones();
+        cargarComunas(regionGuardada, comunaGuardada);
+
+        if (selectRegion) {
+            selectRegion.addEventListener("change", function () {
+                cargarComunas(this.value);
+            });
+        }
     });
 </script>

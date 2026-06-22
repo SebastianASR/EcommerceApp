@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using EcommerceApp.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,101 +11,220 @@ namespace EcommerceApp.Controllers
     public class CheckoutController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
         // Webpay Plus NORMAL - Ambiente de integración / sandbox
         private const string CommerceCode = "597055555532";
         private const string ApiKey = "579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C";
 
-        // Host oficial integración: https://webpay3gint.transbank.cl
-        // Endpoint oficial API REST Webpay Plus v1.2:
-        // POST /rswebpaytransaction/api/webpay/v1.2/transactions
-        // PUT  /rswebpaytransaction/api/webpay/v1.2/transactions/{token}
         private const string TransbankBaseUrl = "https://webpay3gint.transbank.cl";
         private const string TransbankTransactionsPath = "/rswebpaytransaction/api/webpay/v1.2/transactions";
         private const string TransbankUrl = TransbankBaseUrl + TransbankTransactionsPath;
 
-        public CheckoutController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public CheckoutController(
+            ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager)
         {
             _context = context;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            string? carritoBolsa = HttpContext.Session.GetString("MiBolsa");
-
-            if (string.IsNullOrEmpty(carritoBolsa))
-                return RedirectToAction("Catalogo", "Home");
-
-            var listaIds = JsonSerializer.Deserialize<List<int>>(carritoBolsa) ?? new List<int>();
+            var listaIds = ObtenerIdsCarrito();
 
             if (!listaIds.Any())
                 return RedirectToAction("Catalogo", "Home");
 
             var resumenBolsa = ObtenerBolsaAgrupada(listaIds);
-            int totalBolsa = resumenBolsa.Sum(item => item.Producto.Precio * item.Cantidad);
 
-            var modeloPedido = new Pedido
+            if (!resumenBolsa.Any())
+                return RedirectToAction("Catalogo", "Home");
+
+            var modelo = new CheckoutViewModel
             {
-                Total = totalBolsa
+                ResumenBolsa = resumenBolsa,
+                Total = resumenBolsa.Sum(item => item.Producto.Precio * item.Cantidad),
+                EsUsuarioAutenticado = User.Identity?.IsAuthenticated == true
             };
 
-            if (User.Identity?.IsAuthenticated == true)
+            if (modelo.EsUsuarioAutenticado)
             {
                 var usuario = await _userManager.GetUserAsync(User);
 
                 if (usuario != null)
                 {
-                    modeloPedido.UsuarioId = usuario.Id;
-                    modeloPedido.Correo = usuario.Email ?? "";
+                    modelo.Nombre = usuario.Nombre ?? "";
+                    modelo.Apellido = usuario.Apellido ?? "";
+                    modelo.Correo = usuario.Email ?? "";
+                    modelo.Telefono = usuario.TelefonoContacto ?? usuario.PhoneNumber ?? "";
+                    modelo.Region = usuario.Region ?? "";
+                    modelo.Comuna = usuario.Comuna ?? "";
+                    modelo.Calle = usuario.Calle ?? "";
+                    modelo.Numero = usuario.Numero ?? "";
+                    modelo.DeptoBlockOficina = usuario.DeptoBlockOficina;
+                    modelo.GuardarDatosEnCuenta = true;
                 }
             }
 
-            ViewBag.ResumenBolsa = resumenBolsa;
-            return View(modeloPedido);
+            return View(modelo);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Index(Pedido modelo)
+        public async Task<IActionResult> Index(CheckoutViewModel modelo)
         {
-            string? carritoBolsa = HttpContext.Session.GetString("MiBolsa");
-
-            if (string.IsNullOrEmpty(carritoBolsa))
-                return RedirectToAction("Catalogo", "Home");
-
-            var listaIds = JsonSerializer.Deserialize<List<int>>(carritoBolsa) ?? new List<int>();
+            var listaIds = ObtenerIdsCarrito();
 
             if (!listaIds.Any())
                 return RedirectToAction("Catalogo", "Home");
 
             var resumenBolsa = ObtenerBolsaAgrupada(listaIds);
 
-            ModelState.Remove("Detalles");
-            ModelState.Remove("UsuarioId");
-            ModelState.Remove("Total");
+            if (!resumenBolsa.Any())
+                return RedirectToAction("Catalogo", "Home");
+
+            modelo.ResumenBolsa = resumenBolsa;
+            modelo.Total = resumenBolsa.Sum(item => item.Producto.Precio * item.Cantidad);
+            modelo.EsUsuarioAutenticado = User.Identity?.IsAuthenticated == true;
+
+            ModelState.Remove(nameof(CheckoutViewModel.ResumenBolsa));
+            ModelState.Remove(nameof(CheckoutViewModel.Total));
+            ModelState.Remove(nameof(CheckoutViewModel.EsUsuarioAutenticado));
+
+            ApplicationUser? usuario = null;
+            string? usuarioId = null;
+            string tipoCliente = "Invitado";
+
+            if (!modelo.EsUsuarioAutenticado && modelo.CrearCuenta)
+            {
+                if (string.IsNullOrWhiteSpace(modelo.Password))
+                {
+                    ModelState.AddModelError(nameof(modelo.Password), "Debes ingresar una contraseña para crear la cuenta.");
+                }
+
+                if (string.IsNullOrWhiteSpace(modelo.ConfirmPassword))
+                {
+                    ModelState.AddModelError(nameof(modelo.ConfirmPassword), "Debes confirmar la contraseña.");
+                }
+
+                if (modelo.Password != modelo.ConfirmPassword)
+                {
+                    ModelState.AddModelError(nameof(modelo.ConfirmPassword), "Las contraseñas no coinciden.");
+                }
+
+                var existeUsuario = await _userManager.FindByEmailAsync(modelo.Correo);
+
+                if (existeUsuario != null)
+                {
+                    ModelState.AddModelError(nameof(modelo.Correo), "Ya existe una cuenta con este correo. Inicia sesión para continuar.");
+                }
+            }
 
             if (!ModelState.IsValid)
             {
-                ViewBag.ResumenBolsa = resumenBolsa;
                 return View(modelo);
             }
 
-            modelo.Total = resumenBolsa.Sum(item => item.Producto.Precio * item.Cantidad);
+            if (modelo.EsUsuarioAutenticado)
+            {
+                usuario = await _userManager.GetUserAsync(User);
+
+                if (usuario != null)
+                {
+                    usuarioId = usuario.Id;
+                    tipoCliente = "Cliente registrado";
+
+                    if (modelo.GuardarDatosEnCuenta)
+                    {
+                        usuario.Nombre = modelo.Nombre;
+                        usuario.Apellido = modelo.Apellido;
+                        usuario.PhoneNumber = modelo.Telefono;
+                        usuario.TelefonoContacto = modelo.Telefono;
+                        usuario.Region = modelo.Region;
+                        usuario.Comuna = modelo.Comuna;
+                        usuario.Calle = modelo.Calle;
+                        usuario.Numero = modelo.Numero;
+                        usuario.DeptoBlockOficina = modelo.DeptoBlockOficina;
+
+                        await _userManager.UpdateAsync(usuario);
+                    }
+                }
+            }
+            else if (modelo.CrearCuenta)
+            {
+                usuario = new ApplicationUser
+                {
+                    UserName = modelo.Correo,
+                    Email = modelo.Correo,
+                    EmailConfirmed = true,
+
+                    Nombre = modelo.Nombre,
+                    Apellido = modelo.Apellido,
+                    PhoneNumber = modelo.Telefono,
+                    TelefonoContacto = modelo.Telefono,
+
+                    Region = modelo.Region,
+                    Comuna = modelo.Comuna,
+                    Calle = modelo.Calle,
+                    Numero = modelo.Numero,
+                    DeptoBlockOficina = modelo.DeptoBlockOficina,
+
+                    FechaRegistro = DateTime.UtcNow
+                };
+
+                var resultadoCrearUsuario = await _userManager.CreateAsync(usuario, modelo.Password!);
+
+                if (!resultadoCrearUsuario.Succeeded)
+                {
+                    foreach (var error in resultadoCrearUsuario.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                    }
+
+                    return View(modelo);
+                }
+
+                await _userManager.AddToRoleAsync(usuario, "Cliente");
+                await _signInManager.SignInAsync(usuario, isPersistent: false);
+
+                usuarioId = usuario.Id;
+                tipoCliente = "Cuenta creada desde checkout";
+            }
 
             if (modelo.Total <= 0)
             {
                 ModelState.AddModelError("", "El total del pedido debe ser mayor a cero.");
-                ViewBag.ResumenBolsa = resumenBolsa;
                 return View(modelo);
             }
 
-            HttpContext.Session.SetString("DatosDespachoTemporal", JsonSerializer.Serialize(modelo));
-
             string buyOrder = GenerarBuyOrder();
             string sessionId = GenerarSessionId();
+
+            var pedidoTemporal = new Pedido
+            {
+                UsuarioId = usuarioId,
+                NombreCompleto = $"{modelo.Nombre} {modelo.Apellido}".Trim(),
+                Correo = modelo.Correo,
+                Telefono = modelo.Telefono,
+                Region = modelo.Region,
+                Comuna = modelo.Comuna,
+                Calle = modelo.Calle,
+                Numero = modelo.Numero,
+                DeptoBlockOficina = modelo.DeptoBlockOficina,
+                ComentarioCliente = modelo.ComentarioCliente,
+                TipoCliente = tipoCliente,
+                EstadoPago = "Pendiente Webpay",
+                EstadoPedido = "Pendiente",
+                BuyOrder = buyOrder,
+                Total = modelo.Total,
+                FechaPedido = DateTime.UtcNow
+            };
+            HttpContext.Session.SetString("DatosDespachoTemporal", JsonSerializer.Serialize(pedidoTemporal));
 
             string? returnUrl = Url.Action(
                 action: "RetornoWebpay",
@@ -122,7 +236,6 @@ namespace EcommerceApp.Controllers
             if (string.IsNullOrWhiteSpace(returnUrl))
             {
                 ModelState.AddModelError("", "No se pudo generar la URL de retorno para Webpay.");
-                ViewBag.ResumenBolsa = resumenBolsa;
                 return View(modelo);
             }
 
@@ -149,7 +262,6 @@ namespace EcommerceApp.Controllers
                         $"Transbank rechazó la transacción. Código HTTP: {response.StatusCode}. Detalle: {detalleError}"
                     );
 
-                    ViewBag.ResumenBolsa = resumenBolsa;
                     return View(modelo);
                 }
 
@@ -160,10 +272,11 @@ namespace EcommerceApp.Controllers
                     string.IsNullOrWhiteSpace(jsonResult.Url))
                 {
                     ModelState.AddModelError("", "Transbank respondió, pero no entregó token o URL de pago.");
-
-                    ViewBag.ResumenBolsa = resumenBolsa;
                     return View(modelo);
                 }
+
+                pedidoTemporal.WebpayToken = jsonResult.Token;
+                HttpContext.Session.SetString("DatosDespachoTemporal", JsonSerializer.Serialize(pedidoTemporal));
 
                 ViewBag.TokenWs = jsonResult.Token;
                 ViewBag.UrlWebpay = jsonResult.Url;
@@ -175,7 +288,6 @@ namespace EcommerceApp.Controllers
                 ModelState.AddModelError("", "Error al conectar con Webpay: " + ex.Message);
             }
 
-            ViewBag.ResumenBolsa = resumenBolsa;
             return View(modelo);
         }
 
@@ -218,8 +330,14 @@ namespace EcommerceApp.Controllers
 
                     var resumenBolsa = ObtenerBolsaAgrupada(listaIds);
 
+                    if (!resumenBolsa.Any())
+                        return RedirectToAction("PagoRechazado");
+
                     modeloPedido.Total = resumenBolsa.Sum(item => item.Producto.Precio * item.Cantidad);
                     modeloPedido.FechaPedido = DateTime.UtcNow;
+                    modeloPedido.EstadoPago = "Autorizado";
+                    modeloPedido.EstadoPedido = "Pagado";
+                    modeloPedido.WebpayToken = token_ws;
 
                     modeloPedido.Detalles = new List<PedidoDetalle>();
 
@@ -270,6 +388,23 @@ namespace EcommerceApp.Controllers
             return View(pedido);
         }
 
+        private List<int> ObtenerIdsCarrito()
+        {
+            string? carritoBolsa = HttpContext.Session.GetString("MiBolsa");
+
+            if (string.IsNullOrEmpty(carritoBolsa))
+                return new List<int>();
+
+            try
+            {
+                return JsonSerializer.Deserialize<List<int>>(carritoBolsa) ?? new List<int>();
+            }
+            catch
+            {
+                return new List<int>();
+            }
+        }
+
         private List<CarritoItem> ObtenerBolsaAgrupada(List<int> listaIds)
         {
             if (!listaIds.Any())
@@ -312,7 +447,6 @@ namespace EcommerceApp.Controllers
 
         private static string GenerarBuyOrder()
         {
-            // Transbank pide buy_order único y de largo máximo 26.
             string buyOrder = "ORD" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
             return buyOrder.Length <= 26
@@ -322,7 +456,6 @@ namespace EcommerceApp.Controllers
 
         private string GenerarSessionId()
         {
-            // Transbank pide session_id máximo 61 caracteres.
             string sessionId = HttpContext.Session.Id;
 
             if (string.IsNullOrWhiteSpace(sessionId))

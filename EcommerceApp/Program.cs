@@ -1,8 +1,8 @@
 using EcommerceApp.Data;
 using EcommerceApp.Models;
+using EcommerceApp.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using EcommerceApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,26 +28,26 @@ var connectionString = builder.Configuration.GetConnectionString("NeonConnection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// 4. CONFIGURACIÓN DE IDENTITY
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+// 4. CONFIGURACIÓN DE IDENTITY CON USUARIO PERSONALIZADO
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    // Reglas de contraseña más seguras
-    options.Password.RequireDigit = true;                 // Requiere número
-    options.Password.RequireLowercase = true;             // Requiere minúscula
-    options.Password.RequireUppercase = true;             // Requiere mayúscula
-    options.Password.RequireNonAlphanumeric = true;       // Requiere símbolo: !, @, #, etc.
-    options.Password.RequiredLength = 8;                  // Mínimo 8 caracteres
+    // Reglas de contraseña seguras
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequiredLength = 8;
     options.Password.RequiredUniqueChars = 1;
 
     // Bloqueo por intentos fallidos
-    options.Lockout.AllowedForNewUsers = true;            // Aplica bloqueo a usuarios nuevos
-    options.Lockout.MaxFailedAccessAttempts = 5;          // 5 intentos fallidos
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15); // Bloqueo 15 m
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
 
     // Configuración de usuario
-    options.User.RequireUniqueEmail = true;               // No permite correos duplicados
+    options.User.RequireUniqueEmail = true;
 
-    
+    // Para demo/portafolio no exigimos confirmación por correo
     options.SignIn.RequireConfirmedEmail = false;
 })
 .AddErrorDescriber<SpanishIdentityErrorDescriber>()
@@ -72,7 +72,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 var app = builder.Build();
 
-// 6. SEED DE ROLES Y USUARIOS
+// 6. SEED DE ROLES Y USUARIOS DEMO
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -90,11 +90,10 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
-// Sesiones antes de mapear rutas
 app.UseSession();
 
-app.UseAuthentication(); // Verifica QUIÉN eres
-app.UseAuthorization();  // Verifica QUÉ puedes hacer
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapStaticAssets();
 

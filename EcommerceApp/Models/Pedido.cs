@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace EcommerceApp.Models
 {
@@ -8,19 +6,19 @@ namespace EcommerceApp.Models
     {
         public int Id { get; set; }
 
-      
         public string? UsuarioId { get; set; }
+        public ApplicationUser? Usuario { get; set; }
 
         [Required(ErrorMessage = "El nombre es obligatorio")]
         public string NombreCompleto { get; set; } = null!;
 
-        [Required(ErrorMessage = "El correo es obligatorio"), EmailAddress]
+        [Required(ErrorMessage = "El correo es obligatorio")]
+        [EmailAddress]
         public string Correo { get; set; } = null!;
 
         [Required(ErrorMessage = "El teléfono es obligatorio")]
         public string Telefono { get; set; } = null!;
 
-        // --- DATOS DE DIRECCIÓN ---
         [Required(ErrorMessage = "La región es obligatoria")]
         public string Region { get; set; } = null!;
 
@@ -33,12 +31,24 @@ namespace EcommerceApp.Models
         [Required(ErrorMessage = "El número es obligatorio")]
         public string Numero { get; set; } = null!;
 
-        public string? DeptoBlockOficina { get; set; } 
+        public string? DeptoBlockOficina { get; set; }
+
+        public string? ComentarioCliente { get; set; }
+
+        public string TipoCliente { get; set; } = "Invitado";
+
+        public string EstadoPago { get; set; } = "Pendiente";
+
+        public string EstadoPedido { get; set; } = "Pendiente";
+
+        public string? BuyOrder { get; set; }
+
+        public string? WebpayToken { get; set; }
 
         public int Total { get; set; }
+
         public DateTime FechaPedido { get; set; } = DateTime.UtcNow;
 
-        // Relación histórica con los productos comprados
         public List<PedidoDetalle> Detalles { get; set; } = new();
     }
 }

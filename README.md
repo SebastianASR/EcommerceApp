@@ -118,6 +118,15 @@ El checkout permite tres flujos principales:
 
 > El flujo usa ambiente Sandbox de Transbank, por lo tanto no realiza cobros reales.
 
+Datos a usar para probar flujo de compra:
+
+Tarjeta: 4051885600446623
+CVV: 123
+Fecha vencimiento: cualquier fecha futura, por ejemplo 12/29
+RUT autenticación: 11.111.111-1
+Clave: 123
+
+
 ### 📦 Gestión de Pedidos
 
 * Registro de pedidos en PostgreSQL.

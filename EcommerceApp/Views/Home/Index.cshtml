@@ -44,29 +44,57 @@
 </div>
 
 <h4 class="fw-bold text-start mb-3">Componentes</h4>
-<div class="row row-cols-2 row-cols-md-4 g-3 mb-5 text-start">
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-5 text-start">
     <div class="col">
-        <div class="p-3 bg-white rounded-4 border shadow-sm d-flex align-items-center">
-            <div class="bg-dark text-primary p-3 rounded-3 me-3 fs-4"><i class="fa-solid fa-microchip"></i></div>
-            <div><h6 class="fw-bold text-dark mb-0">Procesadores</h6><small class="text-muted">AMD & Intel</small></div>
+        <div class="z-component-card p-3 bg-white rounded-4 border shadow-sm d-flex align-items-center h-100">
+            <div class="z-component-icon bg-dark text-primary rounded-3 me-3 fs-4">
+                <i class="fa-solid fa-microchip"></i>
+            </div>
+
+            <div class="z-component-text">
+                <h6 class="fw-bold text-dark mb-0">Procesadores</h6>
+                <small class="text-muted">AMD & Intel</small>
+            </div>
         </div>
     </div>
+
     <div class="col">
-        <div class="p-3 bg-white rounded-4 border shadow-sm d-flex align-items-center">
-            <div class="bg-dark text-success p-3 rounded-3 me-3 fs-4"><i class="fa-solid fa-vr-cardboard"></i></div>
-            <div><h6 class="fw-bold text-dark mb-0">Tarjetas Gráficas</h6><small class="text-muted">RTX & RX</small></div>
+        <div class="z-component-card p-3 bg-white rounded-4 border shadow-sm d-flex align-items-center h-100">
+            <div class="z-component-icon bg-dark text-success rounded-3 me-3 fs-4">
+                <i class="fa-solid fa-vr-cardboard"></i>
+            </div>
+
+            <div class="z-component-text">
+                <h6 class="fw-bold text-dark mb-0">Tarjetas Gráficas</h6>
+                <small class="text-muted">RTX & RX</small>
+            </div>
         </div>
     </div>
+
     <div class="col">
-        <div class="p-3 bg-white rounded-4 border shadow-sm d-flex align-items-center">
-            <div class="bg-dark text-warning p-3 rounded-3 me-3 fs-4"><i class="fa-solid fa-memory"></i></div>
-            <div><h6 class="fw-bold text-dark mb-0">Memorias RAM</h6><small class="text-muted">DDR4 & DDR5</small></div>
+        <div class="z-component-card p-3 bg-white rounded-4 border shadow-sm d-flex align-items-center h-100">
+            <div class="z-component-icon bg-dark text-warning rounded-3 me-3 fs-4">
+                <i class="fa-solid fa-memory"></i>
+            </div>
+
+            <div class="z-component-text">
+                <h6 class="fw-bold text-dark mb-0">Memorias RAM</h6>
+                <small class="text-muted">DDR4 & DDR5</small>
+            </div>
         </div>
     </div>
+
     <div class="col">
-        <div class="p-3 bg-white rounded-4 border shadow-sm d-flex align-items-center">
-            <div class="bg-dark text-danger p-3 rounded-3 me-3 fs-4"><i class="fa-solid fa-hard-drive"></i></div>
-            <div><h6 class="fw-bold text-dark mb-0">Almacenamiento</h6><small class="text-muted">NVMe M.2</small></div>
+        <div class="z-component-card p-3 bg-white rounded-4 border shadow-sm d-flex align-items-center h-100">
+            <div class="z-component-icon bg-dark text-danger rounded-3 me-3 fs-4">
+                <i class="fa-solid fa-hard-drive"></i>
+            </div>
+
+            <div class="z-component-text">
+                <h6 class="fw-bold text-dark mb-0">Almacenamiento</h6>
+                <small class="text-muted">NVMe M.2</small>
+            </div>
         </div>
     </div>
 </div>
@@ -184,5 +212,64 @@
 
     .btn-agregar:active {
         transform: scale(0.95);
+    }
+
+    .z-component-card {
+        min-height: 104px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .z-component-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.10) !important;
+        }
+
+    .z-component-icon {
+        width: 72px;
+        height: 72px;
+        min-width: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .z-component-text {
+        min-width: 0;
+    }
+
+        .z-component-text h6 {
+            white-space: normal;
+            overflow-wrap: anywhere;
+            line-height: 1.15;
+        }
+
+        .z-component-text small {
+            white-space: normal;
+            line-height: 1.2;
+        }
+
+    @@media (max-width: 576px) {
+        .z-component-card
+
+    {
+        min-height: 96px;
+        padding: 1rem !important;
+    }
+
+    .z-component-icon {
+        width: 64px;
+        height: 64px;
+        min-width: 64px;
+        font-size: 1.35rem !important;
+    }
+
+    .z-component-text h6 {
+        font-size: 1.15rem;
+    }
+
+    .z-component-text small {
+        font-size: 0.95rem;
+    }
+
     }
 </style>

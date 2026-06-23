@@ -4,18 +4,23 @@
     ViewData["Title"] = "Iniciar Sesión";
 }
 
-<div class="container py-5">
+<div class="container py-5 z-auth-shell">
     <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="card shadow-lg border rounded-4 bg-dark text-white p-4" style="border-color: #334155 !important;">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border rounded-4 text-white p-4 z-auth-card">
                 <div class="card-body text-start">
+
                     <div class="text-center mb-4">
-                        <h3 class="fw-black text-primary mb-1">
-                            <i class="fa-solid fa-shield-halved me-2"></i>Z-ACCESO
+                        <div class="z-auth-icon mb-3">
+                            <i class="fa-solid fa-shield-halved fs-3"></i>
+                        </div>
+
+                        <h3 class="fw-black z-auth-title mb-1">
+                            Z-ACCESO
                         </h3>
 
-                        <p class="text-muted small">
-                            Ingresa tus credenciales para continuar
+                        <p class="z-auth-subtitle small mb-0">
+                            Ingresa tus credenciales para continuar en Z-Commerce.
                         </p>
                     </div>
 
@@ -27,26 +32,26 @@
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
                         <div class="mb-3">
-                            <label asp-for="Email" class="form-label small fw-bold text-secondary">
+                            <label asp-for="Email" class="form-label small fw-bold z-auth-label">
                                 CORREO ELECTRÓNICO
                             </label>
 
                             <input asp-for="Email"
                                    type="email"
-                                   class="form-control bg-transparent text-white border-secondary rounded-3 py-2"
+                                   class="form-control rounded-3 py-2 z-auth-input"
                                    placeholder="ejemplo@zcommerce.cl" />
 
                             <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Password" class="form-label small fw-bold text-secondary">
+                            <label asp-for="Password" class="form-label small fw-bold z-auth-label">
                                 CONTRASEÑA
                             </label>
 
                             <input asp-for="Password"
                                    type="password"
-                                   class="form-control bg-transparent text-white border-secondary rounded-3 py-2"
+                                   class="form-control rounded-3 py-2 z-auth-input"
                                    placeholder="••••••••" />
 
                             <span asp-validation-for="Password" class="text-danger small"></span>
@@ -55,37 +60,37 @@
                         <div class="form-check mb-3">
                             <input asp-for="RememberMe" class="form-check-input" />
 
-                            <label asp-for="RememberMe" class="form-check-label small text-secondary">
+                            <label asp-for="RememberMe" class="form-check-label small z-auth-subtitle">
                                 Mantener sesión iniciada
                             </label>
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                             <a asp-action="ForgotPassword"
-                               class="small text-primary text-decoration-none fw-bold">
+                               class="small z-auth-link text-decoration-none fw-bold">
                                 <i class="fa-solid fa-key me-1"></i>
                                 Olvidé mi contraseña
                             </a>
 
                             <a asp-action="ResendEmailConfirmation"
-                               class="small text-info text-decoration-none fw-bold">
+                               class="small z-auth-link text-decoration-none fw-bold">
                                 <i class="fa-solid fa-envelope-circle-check me-1"></i>
                                 Reenviar confirmación
                             </a>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-3 shadow-sm mb-3">
+                        <button type="submit" class="btn z-auth-primary-btn w-100 fw-bold py-2 rounded-3 shadow-sm mb-3">
                             Establecer Conexión
                             <i class="fa-solid fa-arrow-right-to-bracket ms-1"></i>
                         </button>
                     </form>
 
-                    <div class="text-center pt-2 border-top border-secondary mt-3">
-                        <p class="mb-0 small text-muted">
+                    <div class="text-center pt-3 border-top border-secondary border-opacity-25 mt-3">
+                        <p class="mb-0 small z-auth-subtitle">
                             ¿No tienes cuenta?
                             <a asp-action="Register"
                                asp-route-returnUrl="@Model.ReturnUrl"
-                               class="text-primary text-decoration-none fw-bold">
+                               class="z-auth-link text-decoration-none fw-bold">
                                 Regístrate aquí
                             </a>
                         </p>
@@ -93,74 +98,75 @@
 
                     <div class="mt-4">
                         <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="small fw-bold text-secondary text-uppercase">
+                            <span class="small fw-bold z-auth-label text-uppercase">
                                 Accesos demo
                             </span>
                         </div>
 
                         <div class="row g-3">
                             <div class="col-12">
-                                <div class="p-3 rounded-4 border border-primary border-opacity-25 bg-primary bg-opacity-10">
+                                <div class="p-3 rounded-4 z-demo-card">
                                     <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <strong class="text-primary">
+                                        <strong class="z-auth-link">
                                             <i class="fa-solid fa-user me-1"></i> Cliente demo
                                         </strong>
 
-                                        <span class="badge bg-primary text-white">
+                                        <span class="badge z-demo-badge">
                                             Compra
                                         </span>
                                     </div>
 
-                                    <div class="small text-light opacity-75 mb-1">
+                                    <div class="small text-light opacity-75 mb-2">
                                         Para probar carrito, checkout y compra normal.
                                     </div>
 
                                     <div class="small">
-                                        <span class="text-secondary">Correo:</span>
+                                        <span class="z-auth-subtitle">Correo:</span>
                                         <span class="fw-semibold text-white">cliente@zcommerce.cl</span>
                                     </div>
 
                                     <div class="small">
-                                        <span class="text-secondary">Clave:</span>
+                                        <span class="z-auth-subtitle">Clave:</span>
                                         <span class="fw-semibold text-white">Cliente123!</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="col-12">
-                                <div class="p-3 rounded-4 border border-warning border-opacity-25 bg-warning bg-opacity-10">
+                                <div class="p-3 rounded-4 z-demo-card">
                                     <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <strong class="text-warning">
+                                        <strong class="z-auth-link">
                                             <i class="fa-solid fa-user-shield me-1"></i> Demo admin
                                         </strong>
 
-                                        <span class="badge bg-warning text-dark">
+                                        <span class="badge z-demo-badge">
                                             Panel
                                         </span>
                                     </div>
 
-                                    <div class="small text-light opacity-75 mb-1">
+                                    <div class="small text-light opacity-75 mb-2">
                                         Para probar panel de administración limitado.
                                     </div>
 
                                     <div class="small">
-                                        <span class="text-secondary">Correo:</span>
+                                        <span class="z-auth-subtitle">Correo:</span>
                                         <span class="fw-semibold text-white">demo.admin@zcommerce.cl</span>
                                     </div>
 
                                     <div class="small">
-                                        <span class="text-secondary">Clave:</span>
+                                        <span class="z-auth-subtitle">Clave:</span>
                                         <span class="fw-semibold text-white">DemoAdmin123!</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="alert alert-dark border border-secondary border-opacity-25 rounded-4 small mt-3 mb-0 text-secondary">
+                        <div class="alert z-auth-info rounded-4 small mt-3 mb-0">
                             <i class="fa-solid fa-circle-info me-1 text-primary"></i>
                             El usuario DemoAdmin puede revisar funciones del panel, pero las acciones críticas quedan bloqueadas.
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>

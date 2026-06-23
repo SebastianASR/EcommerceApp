@@ -255,31 +255,88 @@
                                     @if (User.IsInRole("Admin") || User.IsInRole("DemoAdmin"))
                                     {
                                         <li>
-                                            <h6 class="dropdown-header text-uppercase tracking-wider small fw-bold text-primary opacity-75 pb-1">
+                                            <h6 class="dropdown-header text-uppercase small fw-bold z-admin-dropdown-title pb-1">
                                                 @(User.IsInRole("DemoAdmin") ? "Modo Demo" : "Gestión Enterprise")
                                             </h6>
                                         </li>
 
                                         <li>
-                                            <a class="dropdown-item rounded-3 p-0 mb-2" asp-controller="Pedidos" asp-action="AdminCompras">
-                                                <div class="dropdown-feature-card dropdown-feature-card-info rounded-3 p-3">
+                                            <a class="dropdown-item rounded-3 p-0 mb-2" asp-controller="Pedidos" asp-action="Dashboard">
+                                                <div class="z-admin-menu-card rounded-3 p-3">
                                                     <div class="d-flex align-items-center justify-content-between mb-1">
-                                                        <span class="fw-bold text-info">
-                                                            <i class="fa-solid fa-receipt me-2"></i>Compras de clientes
+                                                        <span class="fw-bold z-admin-menu-text">
+                                                            <i class="fa-solid fa-chart-line me-2"></i>Dashboard
                                                         </span>
+
+                                                        <span class="badge z-admin-menu-badge">
+                                                            Métricas
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="small z-admin-menu-muted">
+                                                        Revisa ventas, pedidos, productos vendidos y métricas generales.
+                                                    </div>
                                                 </div>
                                             </a>
                                         </li>
 
                                         <li>
-                                            <a class="dropdown-item fw-semibold text-warning rounded-2 py-2" asp-controller="Home" asp-action="VerSolicitudes">
-                                                <i class="fa-solid fa-envelope-open-text me-2"></i>Leads / Solicitudes
+                                            <a class="dropdown-item rounded-3 p-0 mb-2" asp-controller="Pedidos" asp-action="AdminCompras">
+                                                <div class="z-admin-menu-card rounded-3 p-3">
+                                                    <div class="d-flex align-items-center justify-content-between mb-1">
+                                                        <span class="fw-bold z-admin-menu-text">
+                                                            <i class="fa-solid fa-receipt me-2"></i>Compras de clientes
+                                                        </span>
+
+                                                        <span class="badge z-admin-menu-badge">
+                                                            Pedidos
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="small z-admin-menu-muted">
+                                                        Visualiza compras, estados de pago y detalle de pedidos.
+                                                    </div>
+                                                </div>
                                             </a>
                                         </li>
 
                                         <li>
-                                            <a class="dropdown-item fw-semibold text-success rounded-2 py-2" asp-controller="Home" asp-action="GestionProductos">
-                                                <i class="fa-solid fa-boxes-stacked me-2"></i>Gestión de Inventario
+                                            <a class="dropdown-item rounded-3 p-0 mb-2" asp-controller="Home" asp-action="VerSolicitudes">
+                                                <div class="z-admin-menu-card rounded-3 p-3">
+                                                    <div class="d-flex align-items-center justify-content-between mb-1">
+                                                        <span class="fw-bold z-admin-menu-text">
+                                                            <i class="fa-solid fa-envelope-open-text me-2"></i>Leads / Solicitudes
+                                                        </span>
+
+                                                        <span class="badge z-admin-menu-badge">
+                                                            CRM
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="small z-admin-menu-muted">
+                                                        Gestiona solicitudes comerciales y contactos recibidos.
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <a class="dropdown-item rounded-3 p-0 mb-2" asp-controller="Home" asp-action="GestionProductos">
+                                                <div class="z-admin-menu-card rounded-3 p-3">
+                                                    <div class="d-flex align-items-center justify-content-between mb-1">
+                                                        <span class="fw-bold z-admin-menu-text">
+                                                            <i class="fa-solid fa-boxes-stacked me-2"></i>Gestión de inventario
+                                                        </span>
+
+                                                        <span class="badge z-admin-menu-badge">
+                                                            Stock
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="small z-admin-menu-muted">
+                                                        Administra productos, precios, imágenes y disponibilidad.
+                                                    </div>
+                                                </div>
                                             </a>
                                         </li>
 

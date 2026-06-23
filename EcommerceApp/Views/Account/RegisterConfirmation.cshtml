@@ -3,60 +3,53 @@
     var email = ViewBag.Email as string;
 }
 
-<div class="container py-5">
+<div class="container py-5 z-auth-shell">
     <div class="row justify-content-center">
-        <div class="col-lg-7">
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="card-header bg-dark text-white text-center py-4 border-0">
-                    <h3 class="fw-black mb-1">
-                        <i class="fa-solid fa-envelope-circle-check text-primary me-2"></i>
-                        Confirma tu correo
-                    </h3>
-                    <p class="text-light opacity-75 mb-0 small">
-                        Tu cuenta fue creada correctamente
-                    </p>
-                </div>
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-lg border rounded-4 text-white p-4 z-auth-card">
+                <div class="card-body text-center p-4">
 
-                <div class="card-body p-5 text-center">
-                    <div class="mb-4">
-                        <i class="fa-solid fa-paper-plane display-3 text-primary"></i>
+                    <div class="z-auth-icon mb-4">
+                        <i class="fa-solid fa-envelope-circle-check fs-3"></i>
                     </div>
 
-                    <h4 class="fw-black text-dark mb-3">
-                        Revisa tu bandeja de entrada
-                    </h4>
+                    <h3 class="fw-black z-auth-title mb-2">
+                        CONFIRMA TU CORREO
+                    </h3>
 
-                    <p class="text-muted mb-3">
-                        Enviamos un enlace de confirmación a:
+                    <p class="z-auth-subtitle mb-4">
+                        Tu cuenta fue creada correctamente. Para activar el acceso, debes confirmar tu correo electrónico.
                     </p>
 
                     @if (!string.IsNullOrWhiteSpace(email))
                     {
-                        <div class="alert alert-primary border-0 rounded-4 fw-bold">
+                        <div class="alert z-auth-info rounded-4 fw-bold mb-4">
+                            <i class="fa-solid fa-envelope me-1 text-primary"></i>
                             @email
                         </div>
                     }
 
-                    <p class="text-muted small mb-4">
-                        Debes confirmar tu correo antes de poder iniciar sesión en Z-Commerce.
-                        Si no lo ves, revisa la carpeta de spam o promociones.
-                    </p>
+                    <div class="alert z-auth-info rounded-4 small text-start mb-4">
+                        <i class="fa-solid fa-circle-info me-1 text-primary"></i>
+                        Revisa tu bandeja de entrada. Si no ves el correo, revisa spam o promociones.
+                    </div>
 
                     <div class="d-flex gap-2 justify-content-center flex-wrap">
                         <a asp-controller="Account"
                            asp-action="Login"
-                           class="btn btn-primary fw-bold rounded-3 px-4">
+                           class="btn z-auth-primary-btn fw-bold rounded-3 px-4 py-2">
                             <i class="fa-solid fa-arrow-right-to-bracket me-1"></i>
                             Ir al login
                         </a>
 
                         <a asp-controller="Account"
                            asp-action="ResendEmailConfirmation"
-                           class="btn btn-outline-dark fw-bold rounded-3 px-4">
+                           class="btn btn-outline-primary fw-bold rounded-3 px-4 py-2">
                             <i class="fa-solid fa-rotate-right me-1"></i>
                             Reenviar enlace
                         </a>
                     </div>
+
                 </div>
             </div>
         </div>

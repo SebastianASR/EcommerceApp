@@ -2,39 +2,31 @@
     ViewData["Title"] = "Correo confirmado";
 }
 
-<div class="container py-5">
+<div class="container py-5 z-auth-shell">
     <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="card-header bg-dark text-white text-center py-4 border-0">
-                    <h3 class="fw-black mb-1">
-                        <i class="fa-solid fa-circle-check text-success me-2"></i>
-                        Confirmación de correo
-                    </h3>
-                    <p class="text-light opacity-75 mb-0 small">
-                        Estado de activación de cuenta
-                    </p>
-                </div>
+        <div class="col-md-7 col-lg-6">
+            <div class="card shadow-lg border rounded-4 text-white p-4 z-auth-card">
+                <div class="card-body text-center p-4">
 
-                <div class="card-body p-5 text-center">
-                    <div class="mb-4">
-                        <i class="fa-solid fa-user-check display-3 text-success"></i>
+                    <div class="z-auth-icon mb-4">
+                        <i class="fa-solid fa-user-check fs-3"></i>
                     </div>
 
-                    <h4 class="fw-black text-dark mb-3">
-                        Tu cuenta ya puede iniciar sesión
-                    </h4>
+                    <h3 class="fw-black z-auth-title mb-2">
+                        CORREO CONFIRMADO
+                    </h3>
 
-                    <p class="text-muted mb-4">
-                        Si la confirmación fue correcta, ahora puedes acceder con tu correo y contraseña.
+                    <p class="z-auth-subtitle mb-4">
+                        Tu cuenta ya se encuentra activada. Ahora puedes iniciar sesión y continuar usando Z-Commerce.
                     </p>
 
                     <a asp-controller="Account"
                        asp-action="Login"
-                       class="btn btn-primary fw-bold rounded-3 px-4">
+                       class="btn z-auth-primary-btn fw-bold rounded-3 px-4 py-2">
                         <i class="fa-solid fa-arrow-right-to-bracket me-1"></i>
                         Iniciar sesión
                     </a>
+
                 </div>
             </div>
         </div>

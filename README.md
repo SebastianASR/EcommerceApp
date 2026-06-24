@@ -33,7 +33,7 @@ Este proyecto fue desarrollado como parte de mi portafolio profesional para demo
 ## 🌐 Demo en Producción
 
 🔗 **Demo:** https://z-commerce-dh8r.onrender.com/
-📦 **Repositorio:** https://github.com/SebastianASR/EcommerceApp
+📦 **Repositorio:** https://github.com/SebastianASR/Z-Commerce
 
 > La aplicación está desplegada en **Render** mediante Docker y conectada a una base de datos **PostgreSQL alojada en Neon**.
 
@@ -388,8 +388,8 @@ EcommerceApp/
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/SebastianASR/EcommerceApp.git
-cd EcommerceApp
+git clone https://github.com/SebastianASR/Z-Commerce.git
+cd Z-Commerce
 ```
 
 ### 2. Configurar `appsettings.json`

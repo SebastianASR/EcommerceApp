@@ -1,3 +1,19 @@
+<div align="center">
+
+<img src="./docs/assets/z-labs-logo.png" alt="Z Labs Logo" width="240"/>
+
+# Z Labs
+
+### Personal Software Brand by Sebastián Sandoval
+
+**Building software. Creating solutions.**
+
+Z Labs es mi marca personal de desarrollo de software, enfocada en construir aplicaciones modernas, escalables y orientadas a resolver problemas reales mediante tecnología.
+
+</div>
+
+---
+
 # ⚡ Z-COMMERCE — Enterprise E-Commerce Platform
 
 ![.NET](https://img.shields.io/badge/.NET%209.0-512BD4?style=for-the-badge\&logo=dotnet\&logoColor=white)
@@ -550,24 +566,21 @@ Santiago, Chile
 
 ## 📌 Estado del Proyecto
 
-- Proyecto funcional
-- Desplegado en Render
-- Base de datos cloud en Neon
-- Webpay Plus Sandbox integrado
-- Login y registro con Identity
-- Confirmación real de correo electrónico
-- Recuperación de contraseña con Brevo API
-- Reenvío de enlace de confirmación
-- Checkout invitado y registrado
-- DemoAdmin seguro
-- Carrito dinámico
-- Historial de compras para clientes
-- Panel administrativo de pedidos
-- Eliminación de ventas para Admin
-- Gestión de solicitudes
-- Exportación Excel
-- Variables de entorno configuradas para producción
-- DashBoard de métricas de ventas
-
----
-
+* Proyecto funcional
+* Desplegado en Render
+* Base de datos cloud en Neon
+* Webpay Plus Sandbox integrado
+* Login y registro con Identity
+* Confirmación real de correo electrónico
+* Recuperación de contraseña con Brevo API
+* Reenvío de enlace de confirmación
+* Checkout invitado y registrado
+* DemoAdmin seguro
+* Carrito dinámico
+* Historial de compras para clientes
+* Panel administrativo de pedidos
+* Eliminación de ventas para Admin
+* Gestión de solicitudes
+* Exportación Excel
+* Variables de entorno configuradas para producción
+* DashBoard de métricas de ventas

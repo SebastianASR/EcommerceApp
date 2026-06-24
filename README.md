@@ -559,7 +559,7 @@ Perfil orientado a desarrollo **Full-Stack**
 Santiago, Chile
 
 * GitHub: https://github.com/SebastianASR
-* LinkedIn: https://www.linkedin.com/in/sebastian-andre-sandoval-romero-115710296/
+* LinkedIn: [https://www.linkedin.com/in/sebastian-andre-sandoval-romero-115710296/](https://www.linkedin.com/in/sebasti%C3%A1n-andr%C3%A9-sandoval-romero-115710296/)
 * Email: [sandoval.romero.sebastian@gmail.com](mailto:sandoval.romero.sebastian@gmail.com)
 
 ---

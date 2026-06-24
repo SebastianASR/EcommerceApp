@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./docs/assets/z-labs-logo.png" alt="Z Labs Logo" width="360"/>
+<img src="./docs/assets/z-labs-logo.png" alt="Z Labs Logo" width="460"/>
 
 # Z Labs
 
